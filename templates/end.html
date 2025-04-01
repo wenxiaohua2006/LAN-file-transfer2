@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务器信息与问题反馈</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+        }
+        .accordion {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            cursor: pointer;
+            background-color: #4a90e2;
+            color: #fff;
+            transition: background-color 0.3s ease;
+        }
+        .accordion-header:hover {
+            background-color: #357abd;
+        }
+        .accordion-content {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+        }
+        .accordion-content.open {
+            max-height: 500px;
+            padding: 20px;
+        }
+        .question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .question:last-child {
+            border-bottom: none;
+        }
+        .question-title {
+            font-weight: bold;
+            display: flex;
+        }
+        .question-help {
+            cursor: pointer;
+            color: #4a90e2;
+            margin-left: 10px;
+        }
+        .question-help:hover {
+            text-decoration: underline;
+        }
+        .apply-btn {
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .apply-btn.applied {
+            background-color: #8bc34a;
+            cursor: default;
+        }
+        .apply-btn:hover:not(.applied) {
+            background-color: #357abd;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            color: #333;
+        }
+        .feedback-section {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .feedback-section textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            resize: vertical;
+        }
+        .feedback-section button {
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .feedback-section button:hover {
+            background-color: #357abd;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{title}}</h1>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            列入黑名单
+        </div>
+        <div class="accordion-content">
+            <div class="question">
+                <div class="question-title">请向管理员申请,解除你的黑名单<div class="question-help" onclick="showModal('可能管理员看你不爽,给你拉黑名单了')">?</div></div>
+                <button class="apply-btn" onclick="apply(this)" style="cursor: not-allowed;" disabled title="暂不开放">申请</button>
+            </div>
+            <div class="question">
+                <div class="question-title">无</div>
+                <div class="question-help" onclick="showModal('无')">?</div>
+                <button class="apply-btn" onclick="apply(this)" style="cursor: not-allowed;" disabled title="暂不开放">申请</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+            上传与下载问题
+        </div>
+        <div class="accordion-content">
+            <div class="accordion">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    下载问题
+                </div>
+                <div class="accordion-content">
+                    <div class="question">
+                        <div class="question-title">服务器已设置只允许文件上传<div class="question-help" onclick="showModal('服务器设置只允许文件上传,请联系管理员')">?</div></div>
+                        <button class="apply-btn" onclick="apply(this)" style="cursor: not-allowed;" disabled title="暂不开放">申请</button>
+                    </div>
+                </div>
+                <div class="accordion-content">
+                    <div class="question">
+                        <div class="question-title">服务器未设置文件目录<div class="question-help" onclick="showModal('服务器未设置文件目录,请联系管理员')">?</div></div>
+                        <button class="apply-btn" onclick="apply(this)" style="cursor: not-allowed;" disabled title="暂不开放">申请</button>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    上传问题
+                </div>
+                <div class="accordion-content">
+                    <div class="question">
+                        <div class="question-title">服务器禁止下载文件<div class="question-help" onclick="showModal('服务器禁止下载文件,请联系管理员')">?</div></div>
+                        <button class="apply-btn" onclick="apply(this)" style="cursor: not-allowed;" disabled title="暂不开放">申请</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <div class="feedback-section">
+        <h2>反馈</h2>
+        <textarea placeholder="请输入您的反馈..." disabled style="cursor: not-allowed;" title="暂不开放"></textarea>
+        <button onclick="submitFeedback()" disabled style="cursor: not-allowed;" title="暂不开放">提交反馈</button>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <p id="modal-text"></p>
+        </div>
+    </div>
+
+    <script>
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('open');
+        }
+
+        function showModal(text) {
+            const modal = document.getElementById('modal');
+            const modalText = document.getElementById('modal-text');
+            modalText.textContent = text;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+        }
+
+        function apply(button) {
+            button.textContent = '已申请';
+            button.classList.add('applied');
+        }
+
+        function submitFeedback() {
+            const textarea = document.querySelector('.feedback-section textarea');
+            if (textarea.value.trim() === '') {
+                alert('请输入反馈内容');
+            } else {
+                alert('反馈已提交，感谢您的意见！');
+                textarea.value = '';
+            }
+        }
+    </script>
+</body>
+</html>

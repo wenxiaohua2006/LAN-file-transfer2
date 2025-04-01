@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>安全认证系统 | CyberGate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            transform-style: preserve-3d;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: #1a237e;
+            margin-bottom: 2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.8rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #1a237e;
+            background: white;
+            box-shadow: 0 0 10px rgba(26, 35, 126, 0.2);
+        }
+
+        .floating-label {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #757575;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus + .floating-label,
+        .input-field:not(:placeholder-shown) + .floating-label {
+            top: 0px;
+            left: 10px;
+            font-size: 0.8rem;
+            color: #1a237e;
+            background: white;
+            padding: 0 5px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: #1a237e;
+            color: white;
+            box-shadow: 0 4px 6px rgba(26, 35, 126, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: #0d47a1;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #1a237e;
+            border: 2px solid #1a237e;
+        }
+
+        .btn-secondary:hover {
+            background: #1a237e0d;
+        }
+
+        .new-password-group {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+
+        .show-password {
+            padding-top: 10px;
+            max-height: 150px;
+        }
+
+        .password-strength {
+            height: 4px;
+            background: #eee;
+            margin-top: 8px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0;
+            background: #1a237e;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1 class="title">🔒 CyberGate</h1>
+        
+        <div class="input-group">
+            <input type="text" class="input-field" id="username" placeholder=" ">
+            <label class="floating-label">管理员账户</label>
+            <div class="icon">👤</div>
+        </div>
+
+        <div class="input-group">
+            <input type="password" class="input-field" id="password" placeholder=" ">
+            <label class="floating-label">登录密码</label>
+        </div>
+
+        <div class="new-password-group">
+            <div class="input-group">
+                <input type="password" class="input-field" id="new-password" placeholder=" ">
+                <label class="floating-label">新密码</label>
+            </div>
+            <div class="password-strength">
+                <div class="strength-bar"></div>
+            </div>
+            <div class="input-group">
+                <input type="password" class="input-field" id="confirm-password" placeholder=" ">
+                <label class="floating-label">确认新密码</label>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="handleLogin()">进入系统</button>
+            <button class="btn btn-secondary" onclick="togglePasswordSetup()">设置新密码</button>
+        </div>
+    </div>
+
+    <script>
+        function togglePasswordSetup() {
+            const container = document.querySelector('.new-password-group');
+            container.classList.toggle('show-password');
+            document.querySelector('.login-container').classList.toggle('pulse');
+        }
+
+        function handleLogin() {
+            // 登录验证逻辑
+            alert('登录成功！正在跳转...');
+            // 实际开发中此处添加跳转逻辑
+        }
+
+        // 密码强度检测
+        document.getElementById('password').addEventListener('input', function(e) {
+            const strength = calculateStrength(e.target.value);
+            document.querySelector('.strength-bar').style.width = strength + '%';
+        });
+
+        function calculateStrength(password) {
+            let strength = 0;
+            if (password.length >= 8) strength += 40;
+            if (password.match(/[A-Z]/)) strength += 20;
+            if (password.match(/[0-9]/)) strength += 20;
+            if (password.match(/[^A-Za-z0-9]/)) strength += 20;
+            return Math.min(strength, 100);
+        }
+    </script>
+</body>
+</html>

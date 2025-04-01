@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件上传</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .upload-container {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            min-width: 800px;
+            width: 100%;
+        }
+        .upload-container h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #333333;
+        }
+        .upload-box {
+            border: 2px dashed #cccccc;
+            border-radius: 10px;
+            padding: 1.5rem;
+            background-color: #fafafa;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        .upload-box:hover {
+            border-color: #007bff;
+        }
+        .upload-box input[type="file"] {
+            display: none;
+        }
+        .upload-box label {
+            display: block;
+            font-size: 1rem;
+            color: #555555;
+            cursor: pointer;
+        }
+        .upload-box label span {
+            color: #007bff;
+            font-weight: bold;
+        }
+        .upload-box label:hover span {
+            text-decoration: underline;
+        }
+        .upload-button {
+            margin-top: 1.5rem;
+        }
+        .upload-button button {
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .upload-button button:hover {
+            background-color: #0056b3;
+        }
+        .upload-button button:active {
+            background-color: #004080;
+        }
+        .upload-message {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #555555;
+        }
+
+        .tab-container {
+            max-width: 800px;
+            margin: 20px auto;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .tab-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: -1px;
+        }
+
+        .tab-button {
+            padding: 12px 30px;
+            background: #f5f7fa;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s ease;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+        }
+
+        .tab-button.active {
+            background: #fff;
+            color: #2c83f6;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            transform: translateY(2px);
+        }
+
+        .tab-content {
+            position: relative;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .upload-container {
+            opacity: 0;
+            transform: translateY(100px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            width: 100%;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .upload-container.active {
+            opacity: 1;
+            transform: translateY(0);
+            position: relative;
+        }
+        .progress-container {
+            margin: 15px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            max-width: 400px;
+            min-width: 800px;
+            }
+
+            /* 文件信息行 */
+            .file-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-family: 'Segoe UI', sans-serif;
+            }
+
+            .file-name {
+            font-weight: 600;
+            color: #2c3e50;
+            max-width: 70%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            }
+
+            .file-size {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            }
+
+            /* 自定义进度条 */
+            .progress-bar {
+            height: 16px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            }
+
+            .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            border-radius: 8px;
+            width: 0;
+            transition: width 0.3s ease, background 0.3s;
+            }
+
+            /* 状态指示器 */
+            .status {
+            display: inline-block;
+            margin-left: 12px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            }
+
+            .uploading {
+            background: #3498db;
+            color: white;
+            }
+
+            .success {
+            background: #2ecc71;
+            color: white;
+            animation: bounce 0.5s;
+            }
+
+            .error {
+            background: #e74c3c;
+            color: white;
+            }
+
+            /* 加载动画 */
+            .loading-icon {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            }
+
+            /* 动画定义 */
+            @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+            }
+
+            @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            }
+
+    </style>
+</head>
+<body>
+
+
+    <div class="tab-container">
+        <h1>文件上传</h1>
+        <!-- 选项卡按钮 -->
+        <div class="tab-header">
+            <button class="tab-button active" onclick="switchTab(0)">文件上传</button>
+            
+            {% if dirwrite %}
+                {% if filewrite %}
+                <button class="tab-button" onclick="switchTab(1)" id="dirButton">目录上传</button>
+                {% else %}
+                <button class="tab-button" onclick="switchTab(1)" id="dirButton" disabled style="cursor: not-allowed;" title="服务器不允许目录上传">目录上传</button>
+                {% endif %}
+            {% else %}
+            <button class="tab-button" onclick="switchTab(1)" id="dirButton" disabled style="cursor: not-allowed;" title="服务器不允许目录上传">目录上传</button>
+            {% endif %}
+        </div>
+        
+        <!-- 内容容器 -->
+        <div class="tab-content">
+            <!-- 第一个上传容器 -->
+            <div class="upload-container active">
+                <form action="/upload" method="post" enctype="multipart/form-data">
+                    <div class="upload-box" id="uploadBox1">
+                        <input type="file" name="file" id="fileInput1" required>
+                        <label for="fileInput1" id="fileLabel1">
+                            点击或将文件拖拽到此处上传<br>
+                            <span>选择文件</span>
+                        </label>
+                    </div>
+                </form>
+                <div class="upload-button">
+                    <button id="button1" onclick="handleFiles()" disabled  style="cursor: not-allowed;">立即上传</button>
+                </div>
+                <div class="upload-message" id="uploadMessage1">
+                    {% if not istype %}
+                        当前服务器已支持全部类型文件上传,单文件最大限制{{ size }} MB
+                    {% else %}
+                        支持上传 {{ typefile }} 等格式的文件,单文件最大限制{{ size }} MB
+                    {% endif %}
+                </div>
+            </div>
+    
+            <!-- 第二个上传容器 -->
+            <div class="upload-container">
+                <form action="/upload" method="post" enctype="multipart/form-data">
+                    <div class="upload-box" id="uploadBox2">
+                        <input type="file" name="file" id="fileInput2" required webkitdirectory multiple>
+                        <label for="fileInput2" id="fileLabel2">
+                            点击或将文件夹拖拽到此处上传<br>
+                            <span>选择文件夹</span>
+                        </label>
+                    </div>
+                </form>
+                <div class="upload-button">
+                    <button id="button2" disabled style="cursor: not-allowed;" onclick="handledirs2()">批量上传</button>
+                </div>
+                <div class="upload-message" id="uploadMessage2">
+                    支持整个文件夹及子目录上传,不建议拖拽文件,可能会导致目录结构丢失、文件夹上传后再次上传无法获取到文件,推荐文件夹选择
+                </div>
+            </div>
+        </div>
+        <div style="margin: auto;">
+            <h2>上传进度><a>只显示最近10个上传的文件情况</a></h2>
+        </div>
+    </div>
+
+    
+<div id="progressContainer">
+    
+</div>
+
+<script>
+    const filetype = '{{typefile}}'.split('、');
+    const ontype = '{{istype}}' == 'True' ? true : false;
+    console.log(filetype);
+function createProgressElement(file) {
+  const container = document.createElement('div');
+  container.className = 'progress-container';
+  
+  container.innerHTML = `
+    <div class="file-info">
+      <span class="file-name">${file.name}</span>
+      <span class="file-size">${(file.size/1024/1024).toFixed(2)}MB</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill"></div>
+    </div>
+    <div class="status uploading">
+      <span>上传中</span>
+      <div class="loading-icon"></div>
+    </div>
+  `;
+
+  return {
+    container: container,
+    fill: container.querySelector('.progress-fill'),
+    status: container.querySelector('.status'),
+    loadingIcon: container.querySelector('.loading-icon')
+  };
+}
+</script>
+
+<script>
+        const fileInput2 = document.getElementById('fileInput2');
+        const uploadBox2 = document.getElementById('uploadBox2');
+        const uploadMessage2 = document.getElementById('uploadMessage2');
+        const buttonfile2 = document.getElementById('button2');
+        const fileLabel2 = document.getElementById('fileLabel2');
+        const progressContainer = document.getElementById('progressContainer');
+        var dir;
+        var filepath = {};
+
+        function removeset(){
+            if (document.querySelectorAll('.progress-container').length > 10){
+                progressContainer.lastElementChild?.remove();
+            }
+            
+        }
+
+        fileInput2.addEventListener('change', (event) => {
+            var filepath = {};
+            dir = event.target.files;
+            console.log(dir);
+            if (dir) {
+                buttonfile2.style.cursor = 'pointer';
+                buttonfile2.disabled = false;
+                fileLabel2.innerHTML = `已选择文件夹：<span>${dir[0].webkitRelativePath.split('/')[0]}</span>`;
+                filesize = 0;
+                for (let i = 0; i < dir.length; i++) {
+                    filesize += dir[i].size;
+                }
+                uploadMessage2.textContent = `文件夹大小：${(filesize / 1024).toFixed(2)} KB`;
+            }else{
+                fileLabel2.innerHTML = `<span>该文件夹无项目</span>`;
+            }
+        });
+
+        // 拖拽文件功能
+        uploadBox2.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            uploadBox2.style.borderColor = '#007bff';
+        });
+
+        uploadBox2.addEventListener('dragleave', (event) => {
+            event.preventDefault();
+            uploadBox2.style.borderColor = '#cccccc';
+        });
+
+        
+uploadBox2.addEventListener('drop', async (event) => {
+    dir = null;
+    filepath = {};
+    console.log("200000")
+    event.preventDefault();
+    uploadBox2.style.borderColor = '#cccccc';
+    showTempAlert('推荐选择文件夹上传，不建议拖拽文件');
+    // 检测浏览器支持性
+    if (!DataTransferItem.prototype.webkitGetAsEntry) {
+        alert('您的浏览器不支持文件夹拖拽上传，请使用 Chrome/Edge 浏览器');
+        return;
+    }
+
+    const items = event.dataTransfer.items;
+    const files = [];
+    
+
+    // 创建带路径的 File 对象
+    function createFileWithPath(file, path) {
+        return new File([file], file.name, {
+            type: file.type,
+            lastModified: file.lastModified,
+            webkitRelativePath: path + file.name
+        });
+    }
+
+    async function processEntry(entry, path = '') {
+        if (entry.isFile) {
+        return new Promise(resolve => {
+            entry.file(originalFile => {
+                // 创建包含路径的新 File 对象
+                const fileWithPath = new File([originalFile], originalFile.name, {
+                    type: originalFile.type,
+                    lastModified: originalFile.lastModified,
+                    webkitRelativePath: path + originalFile.name // 注入路径‌:ml-citation{ref="3" data="citationList"}
+                });
+                files.push(fileWithPath);
+                resolve();
+            });
+        });
+    } else if (entry.isDirectory) {
+            const dirReader = entry.createReader();
+            const entries = await new Promise(resolve => 
+                dirReader.readEntries(entries => resolve(entries))
+            );
+            
+            for (const dirEntry of entries) {
+                console.log(dirEntry);
+                if (dirEntry.isFile) {
+                    console.log(dirEntry.fullPath)
+                    let listpath = dirEntry.fullPath.split('/').filter(item => item !== '')
+                    filepath[dirEntry.name] = listpath.slice(0, -1).join('/');
+                }
+                await processEntry(dirEntry, `${path}${entry.name}/`);
+            }
+        }
+    }
+
+        for (const item of items) {
+            const entry = item.webkitGetAsEntry();
+            if (entry) {
+                await processEntry(entry, '');
+            }
+        }
+
+        const dataTransfer = new DataTransfer();
+        files.forEach(file => dataTransfer.items.add(file));
+        fileInput2.files = dataTransfer.files;
+        
+        buttonfile2.style.cursor = 'pointer';
+        buttonfile2.disabled = false;
+        console.log('获取的文件列表:', files);
+        let value
+
+        for (let key in filepath) {
+            if (filepath.hasOwnProperty(key)) { // 检查属性是否直接存在于对象上，而不是原型链上
+                value = filepath[key];
+                console.log('Key:', key, 'Value:', value);
+                // 你可以在这里中断循环，如果你只需要第一个属性的话
+                break; // 这将只输出第一个遍历到的属性（按某种实现定义的顺序）
+            }
+        }
+        fileLabel2.innerHTML = `已选择文件夹：<span>${value.split('/')[0]}</span>`;
+        let filesize = 0;
+        for (let i = 0; i < files.length; i++) {
+            filesize += files[i].size;
+        }
+        uploadMessage2.textContent = `文件夹大小：${(filesize / 1024).toFixed(2)} KB`;
+});
+
+
+
+        function handledirs2() {
+            if(dir){
+                handleMkdir();
+            }else{
+                handleMkdir2();
+            }
+            
+        }
+
+        function handleMkdir() {
+    const files = document.getElementById('fileInput2').files;
+    if (files.length <=0 ) {
+        showTempAlert('选择已过时，请重新选择文件夹');
+        alert('请重新选择文件夹');
+        return -1; // 直接使用 break 语句来停止循环
+    }
+    
+  if(ontype){
+    for (const file of Array.from(files)) {
+        const extension = file.name.split('.').pop().toUpperCase();
+        if (!(extension in filetype)) {
+            alert(`有不支持上传 .${extension} 格式的文件`);
+            return -1; // 直接使用 break 语句来停止循环
+        }
+        // 在这里处理允许的文件（如果需要的话）
+    }
+  }
+  Array.from(files).forEach((file, index) => {
+    // 为每个文件创建独立的进度对象
+    const progress = createProgressElement(file); // 这里必须定义在闭包内
+    if (progressContainer.firstChild) {
+        progressContainer.insertBefore(progress.container, progressContainer.firstChild);
+    } else {
+        progressContainer.appendChild(progress.container);
+    }
+    
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('isDir', '1');
+    openstart(progress,formData);
+    removeset();
+  });
+}
+
+function openstart(progress,formData){
+    const xhr = new XMLHttpRequest();
+    // 闭包内绑定进度对象
+    xhr.upload.addEventListener('progress', function(event) {
+      if (event.lengthComputable) {
+        const percent = (event.loaded / event.total * 100);
+        progress.fill.style.width = `${percent}%`; // 现在可以正确访问progress
+        progress.loadingIcon.style.display = 'inline-block';
+      }
+    });
+
+    xhr.addEventListener('load', function() {
+      const responseData = JSON.parse(xhr.responseText);
+      console.log(responseData);
+      if (responseData.msg == 0 || responseData.msg == 2){
+        progress.loadingIcon.style.display = 'none';
+        progress.fill.style.background = '#e74c3c';
+        progress.status.classList.remove('uploading');
+        progress.status.classList.add('error');
+        progress.status.innerHTML = '✕ 上传失败'+responseData.code;
+        return false;
+      }
+      progress.loadingIcon.style.display = 'none';
+      progress.status.classList.remove('uploading');
+      progress.status.classList.add('success');
+      progress.status.innerHTML = '✓ 上传成功';
+      return true;
+    });
+
+    xhr.addEventListener('error', function() {
+      progress.loadingIcon.style.display = 'none';
+      progress.fill.style.background = '#e74c3c';
+      progress.status.classList.remove('uploading');
+      progress.status.classList.add('error');
+      progress.status.innerHTML = '✕ 上传失败'+'无法访问目标服务';
+    });
+
+    xhr.open('POST', '/upload', true);
+    xhr.send(formData);
+    removeset();
+}
+
+
+function showTempAlert(message) {
+    // 1. 创建弹窗元素
+    const alertBox = document.createElement('div');
+    
+    // 2. 设置基础样式（可自定义）
+    Object.assign(alertBox.style, {
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        padding: '20px 30px',
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        color: 'white',
+        borderRadius: '8px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        zIndex: '1000',
+        fontSize: '16px',
+        transition: 'opacity 0.3s ease',
+        opacity: '0' // 初始透明用于渐显动画
+    });
+
+    // 3. 添加文本内容
+    alertBox.textContent = message;
+
+    // 4. 插入到页面
+    document.body.appendChild(alertBox);
+
+    // 5. 触发渐显动画
+    setTimeout(() => {
+        alertBox.style.opacity = '1';
+    }, 10);
+
+    // 6. 2秒后自动消失
+    setTimeout(() => {
+        alertBox.style.opacity = '0';
+        // 动画完成后移除元素
+        setTimeout(() => {
+        document.body.removeChild(alertBox);
+        }, 300);
+    }, 2000);
+    }
+        // function handleMkdir() {
+        //     console.log("执行1");
+        //     const filedir = document.getElementById('fileInput2').files;
+        //     for (let i = 0; i < filedir.length; i++) {
+        //         const formData = new FormData();
+        //         formData.append('file', filedir[i]);
+        //         for (let [key, value] of formData.entries()) {
+        //             console.log(key, value);
+        //         }
+        //         fetch('/upload', {
+        //         method: 'POST',
+        //         body: formData
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         console.log('Upload success:', data);
+        //     })
+        //     .catch(error => {
+        //         console.error('Upload error:', error);
+        //     });
+        //     }
+        //     alert(data.code);
+        // }
+        function handleMkdir2() {
+            let savepath = filepath;
+            const filedir = document.getElementById('fileInput2').files;
+            if(ontype){
+                for (const file of Array.from(filedir)) {
+                    const extension = file.name.split('.').pop().toUpperCase();
+                    if (!(extension in filetype)) {
+                        alert(`有不支持上传 .${extension} 格式的文件`);
+                        
+                        return -1; // 直接使用 break 语句来停止循环
+                    }
+                    // 在这里处理允许的文件（如果需要的话）
+                }
+            }
+            for (let i = 0; i < filedir.length; i++) {
+                const formData = new FormData();
+                formData.append('file', filedir[i]);
+                formData.append('filepath', filepath[filedir[i].name]);
+                formData.append('isDir', '1');
+                console.log(filedir[i],filepath[filedir[i].name])
+                delete filepath[filedir[i].name];
+
+                for (let [key, value] of formData.entries()) {
+                    console.log(key, value);
+                }
+                const progress = createProgressElement(filedir[i]); // 这里必须定义在闭包内
+                if (progressContainer.firstChild) {
+                    progressContainer.insertBefore(progress.container, progressContainer.firstChild);
+                } else {
+                    progressContainer.appendChild(progress.container);
+                }
+                openstart(progress,formData);
+            }
+            filepath = savepath;
+            savepath = null;
+            removeset();
+        }
+</script>
+
+    <script>
+        const tabButtons = document.getElementById('dirButton').disabled;
+function switchTab(index) {
+    // 切换按钮状态
+    if(!tabButtons){
+        document.querySelectorAll('.tab-button').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index)
+    })
+    // 切换内容容器
+    document.querySelectorAll('.upload-container').forEach((container, i) => {
+        container.classList.toggle('active', i === index)
+    })
+    }
+    
+}
+
+        // 动态显示文件名
+        const fileInput = document.getElementById('fileInput1');
+        const uploadBox = document.getElementById('uploadBox1');
+        const uploadMessage = document.getElementById('uploadMessage1');
+        const buttonfile = document.getElementById('button1');
+        const fileLabel = document.getElementById('fileLabel1');
+        var file;
+        fileInput.addEventListener('change', (event) => {
+            file = event.target.files[0];
+            if (file) {
+                buttonfile.style.cursor = 'pointer';
+                buttonfile.disabled = false;
+                fileLabel.innerHTML = `已选择文件：<span>${file.name}</span>`;
+                uploadMessage.textContent = `文件大小：${(file.size / 1024).toFixed(2)} KB`;
+            }
+        });
+
+        // 拖拽文件功能
+        uploadBox.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            uploadBox.style.borderColor = '#007bff';
+        });
+
+        uploadBox.addEventListener('dragleave', (event) => {
+            event.preventDefault();
+            uploadBox.style.borderColor = '#cccccc';
+        });
+
+        uploadBox.addEventListener('drop', (event) => {
+            event.preventDefault();
+            uploadBox.style.borderColor = '#cccccc';
+            file = event.dataTransfer.files[0];
+            console.log(file);
+            if (file) {
+                buttonfile.style.cursor = 'pointer';
+                buttonfile.disabled = false;
+                // 创建一个新的 DataTransfer 对象
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file); // 将文件添加到 DataTransfer
+
+                // 将 DataTransfer 的文件列表赋值给 fileInput.files
+                fileInput.files = dataTransfer.files;
+                fileLabel.innerHTML = `已选择文件：<span>${file.name}</span>`;
+                uploadMessage.textContent = `文件大小：${(file.size / 1024).toFixed(2)} KB`;
+            }
+        });
+
+
+        function handleFiles() {
+            console.log(file);
+                if(ontype){
+                    const extension = file.name.split('.').pop().toUpperCase();
+                    if (!filetype.includes(extension)) {
+                        alert(`有不支持上传 .${extension} 格式的文件`);
+                        return -1;
+                    }
+                }
+                // 在这里处理允许的文件（如果需要的话）
+            const formData = new FormData();
+            // for (let i = 0; i < file.length; i++) {
+            //     formData.append('file[]', file[i]); // 添加文件到FormData对象
+            // }
+            formData.append('file', file); // 添加文件到FormData对象
+            formData.append('isDir', '0');
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
+            // 使用XMLHttpRequest或fetch API发送文件到服务器
+
+            const progress = createProgressElement(file); // 这里必须定义在闭包内
+            if (progressContainer.firstChild) {
+                progressContainer.insertBefore(progress.container, progressContainer.firstChild);
+            } else {
+                progressContainer.appendChild(progress.container);
+            }
+            openstart(progress,formData);
+
+            // fetch('/upload', {
+            //     method: 'POST',
+            //     body: formData
+            // })
+            // .then(response => response.json())
+            // .then(data => {
+            //     console.log('Upload success:', data);
+            //     alert(data.code);
+            // })
+            // .catch(error => {
+            //     console.error('Upload error:', error);
+            // });
+        }
+    </script>
+
+</body>
+</html>

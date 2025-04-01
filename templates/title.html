@@ -1,0 +1,204 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .tooltip-trigger {
+            position: relative;
+            display: inline-block;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .tooltip-trigger:hover {
+            background: #2980b9;
+        }
+
+        .custom-tooltip {
+            position: fixed;
+            background: #2c3e50;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.4;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(-50%);
+            transition: opacity 0.2s, transform 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 200px;
+            z-index: 1000;
+        }
+
+        /* 箭头样式 */
+        .custom-tooltip::after {
+            content: "";
+            position: absolute;
+            right: -6px;
+            top: 50%;
+        }
+
+        /* 显示时的动画效果 */
+        .custom-tooltip.active {
+            opacity: 1;
+            transform: translate(3px, -50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="tooltip-trigger" 
+         data-tooltip="这是一个自定义的提示信息，可以包含多行内容">
+        悬停显示提示
+    </div>
+
+    <div class="custom-tooltip"></div>
+
+    <script>
+        const triggers = document.querySelectorAll('.tooltip-trigger');
+        const tooltip = document.querySelector('.custom-tooltip');
+
+        // 鼠标移动事件处理
+        function handleMouseMove(e) {
+            const x = e.pageX - 10;
+            const y = e.pageY + 50;
+            
+            tooltip.style.left = x + 'px';
+            tooltip.style.top = y + 'px';
+        }
+
+        // 显示提示框
+        function showTooltip(text) {
+            tooltip.textContent = text;
+            tooltip.classList.add('active');
+        }
+
+        // 隐藏提示框
+        function hideTooltip() {
+            tooltip.classList.remove('active');
+        }
+
+        // 事件绑定
+        triggers.forEach(trigger => {
+            trigger.addEventListener('mouseenter', (e) => {
+                const text = e.target.dataset.tooltip;
+                showTooltip(text);
+                document.addEventListener('mousemove', handleMouseMove);
+            });
+
+            trigger.addEventListener('mouseleave', () => {
+                hideTooltip();
+                document.removeEventListener('mousemove', handleMouseMove);
+            });
+        });
+    </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nested Details with Animation</title>
+  <style>
+    details {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: bold;
+  outline: none;
+}
+
+.content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+  </style>
+</head>
+<body>
+  <details>
+    <summary>父级 1</summary>
+    <div class="content">
+      <p>这是父级 1 的内容。</p>
+      <details>
+        <summary>子级 1.1</summary>
+        <div class="content">
+          <p>这是子级 1.1 的内容。</p>
+          <details>
+            <summary>子级 1.1.1</summary>
+            <div class="content">
+              <p>这是子级 1.1.1 的内容。</p>
+            </div>
+          </details>
+        </div>
+      </details>
+      <details>
+        <summary>子级 1.2</summary>
+        <div class="content">
+          <p>这是子级 1.2 的内容。</p>
+        </div>
+      </details>
+    </div>
+  </details>
+
+  <details>
+    <summary>父级 2</summary>
+    <div class="content">
+      <p>这是父级 2 的内容。</p>
+    </div>
+  </details>
+
+  <script>
+    function initDetailsAnimation(details) {
+  const content = details.querySelector('.content');
+
+  // 初始化时，如果 details 是展开的，设置 max-height
+  if (details.open) {
+    content.style.maxHeight = content.scrollHeight + 'px';
+  }
+
+  // 监听 toggle 事件
+  details.addEventListener('toggle', () => {
+    if (details.open) {
+      // 展开时，设置 max-height 为内容的实际高度
+      content.style.maxHeight = null;
+    } else {
+      // 折叠时，重置 max-height 为 0
+      content.style.maxHeight = null;
+    }
+  });
+}
+
+//   // 监听内容区域的变化
+//   const observer = new MutationObserver(() => {
+//     if (details.open) {
+//       content.style.maxHeight = content.scrollHeight + 'px';
+//     }
+//   });
+
+//   observer.observe(content, {
+//     childList: true, // 监听子节点变化
+//     subtree: true,   // 监听所有后代节点
+//   });
+
+//   // 递归处理嵌套的 details
+//   details.querySelectorAll('details').forEach(initDetailsAnimation);
+// }
+
+// // 初始化所有 details
+// document.querySelectorAll('details').forEach(initDetailsAnimation);
+  </script>
+</body>
+</html>

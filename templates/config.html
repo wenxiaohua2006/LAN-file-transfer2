@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>服务器配置中心</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <style>
+        :root {
+            --primary-color: #409EFF;
+            --success-color: #67C23A;
+            --danger-color: #F56C6C;
+            --bg-color: #9bc4ff;
+        }
+
+        body {
+            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+            background-color: var(--bg-color);
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .title2 {
+            text-align: center;
+            color: #303133;
+            margin-bottom: 30px;
+            font-size: 30px;
+        }
+
+        .config-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .config-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .switch-group {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .switch-label {
+            flex: 1;
+            color: #606266;
+        }
+
+        /* .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        } */
+/* 
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #dcdfe6;
+            transition: .4s;
+            border-radius: 34px;
+        } */
+
+        /* .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        } */
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 80%;
+            min-width: 150px;
+            padding: 8px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .unit {
+            margin-left: 10px;
+            color: #909399;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            min-width: 400px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            background: #f0f2f5;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 5px;
+        }
+
+        .tag-remove {
+            margin-left: 8px;
+            cursor: pointer;
+            color: #909399;
+        }
+
+        .record-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ebeef5;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .speed-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 16px 0;
+            }
+
+            .speed-item {
+            display: flex;
+            align-items: center;
+            width: 45%;
+            padding: 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            }
+
+            .speed-item:hover {
+            background-color: #f8f9fa;
+            }
+
+            .icon-container {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            }
+
+            .download .icon-container {
+            background: #e3f2fd;
+            color: #2196f3;
+            }
+
+            .upload .icon-container {
+            background: #e8f5e9;
+            color: #4caf50;
+            }
+
+            .speed-icon {
+            width: 28px;
+            height: 28px;
+            }
+
+            .title {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 4px;
+            }
+
+            .value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            letter-spacing: -0.5px;
+            }
+
+            .unit {
+            font-size: 14px;
+            color: #888;
+            margin-left: 4px;
+            }
+
+            .divider {
+            width: 1px;
+            height: 60px;
+            background: #eee;
+            }
+
+            @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+            }
+
+            .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+            /* 弹窗容器 */
+            .dialog {
+                background: white;
+                padding: 2rem;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                min-width: 320px;
+                transform: scale(0.9);
+                opacity: 0;
+                transition: all 0.3s ease;
+            }
+
+            /* 弹窗激活状态 */
+            .dialog.active {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            /* 弹窗标题 */
+            .dialog-title {
+                font-size: 1.2rem;
+                font-weight: 600;
+                margin-bottom: 1rem;
+                color: #333;
+            }
+
+            /* 弹窗内容 */
+            .dialog-content {
+                color: #666;
+                margin-bottom: 1.5rem;
+                line-height: 1.5;
+            }
+
+            /* 按钮容器 */
+            .dialog-actions {
+                display: flex;
+                gap: 1rem;
+                justify-content: flex-end;
+            }
+
+            /* 通用按钮样式 */
+            .dialog-button {
+                padding: 0.6rem 1.2rem;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                font-weight: 500;
+            }
+
+            /* 确认按钮 */
+            .confirm-btn {
+                background: #007bff;
+                color: white;
+            }
+
+            .confirm-btn:hover {
+                background: #0056b3;
+            }
+
+            /* 取消按钮 */
+            .cancel-btn {
+                background: #f0f0f0;
+                color: #666;
+            }
+
+            .cancel-btn:hover {
+                background: #e0e0e0;
+            }
+
+            /* 危险状态 */
+            .dialog.warning .confirm-btn {
+                background: #dc3545;
+            }
+
+            .dialog.warning .confirm-btn:hover {
+                background: #bb2d3b;
+            }
+
+            .icon {
+                width: 24px;
+                height: 24px;
+                margin-right: 8px;
+                padding: 5px 0 5px 0;
+                vertical-align: middle;
+            }
+            .icon2{
+                width: 24px;
+                height: 20px;
+                margin-right: 2px;
+                padding: 3px 10 3px 3;
+                vertical-align: middle;
+                margin-top: -3px;
+            }
+    </style>
+    <style>
+        .config-card2 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.dynamic-row {
+    display: flex;
+    height: 60px;
+    gap: 8px;
+    grid-column: 1 / -1;
+}
+
+.dynamic-btn {
+    position: relative;
+    height: 100%;
+    border: none;
+    border-radius: 10px;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    color: white;
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
+    flex-shrink: 0;
+    background: linear-gradient(145deg, var(--c1), var(--c2));
+}
+
+/* 预定义宽度方案 */
+.dynamic-btn[data-size="1"] { width: 180px; }
+.dynamic-btn[data-size="2"] { width: 240px; }
+.dynamic-btn[data-size="3"] { width: 300px; }
+
+/* 动态交互 */
+.dynamic-row:hover .dynamic-btn:not(:hover) {
+    width: calc(var(--base-width) * 0.6)!important;
+}
+
+.dynamic-btn:hover {
+    width: calc(var(--base-width) * 1.4)!important;
+    z-index: 2;
+    transform: rotateZ(-1deg) scale(1.05);
+    filter: drop-shadow(4px 6px 8px rgba(0,0,0,0.2));
+}
+
+/* 颜色方案 */
+/* .dynamic-btn:nth-child(1n) { --c1: #6366f1; --c2: #8b5cf6; }
+.dynamic-btn:nth-child(2n) { --c1: #ef4444; --c2: #f97316; }
+.dynamic-btn:nth-child(3n) { --c1: #10b981; --c2: #84cc16; } */
+
+/* 预定义行布局 */
+.row-1 { justify-content: flex-start; margin-left: 15%; }
+.row-2 { justify-content: flex-end; margin-right: 10%; }
+.row-3 { justify-content: center; }
+
+/* 3D效果 */
+.dynamic-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, 
+        rgba(255,255,255,0.1) 0%,
+        rgba(0,0,0,0.1) 100%);
+    border-radius: inherit;
+    mix-blend-mode: overlay;
+}
+
+@keyframes glow {
+    0% { opacity: 0.8; }
+    100% { opacity: 0.4; }
+}
+    </style>
+
+<style>
+    .switch {
+    position: relative;
+    display: inline-block;
+    width: 73px;
+    height: 33px;
+    cursor: pointer;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(145deg, #e6e6e6, #ffffff);
+    transition: .4s;
+    border-radius: 34px;
+    box-shadow: 3px 3px 8px #d1d1d1,
+                -3px -3px 8px #ffffff;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 25px;
+    width: 25px;
+    left: 4px;
+    bottom: 4px;
+    background: linear-gradient(145deg, #f3f3f3, #e6e6e6);
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 2px 2px 4px #d1d1d1,
+                -2px -2px 4px #ffffff;
+}
+
+input:checked + .slider {
+    background: linear-gradient(145deg, #6ee7b7, #34d399);
+    box-shadow: inset 3px 3px 5px #2fa37c,
+                inset -3px -3px 5px #3cffb6;
+}
+
+input:checked + .slider:before {
+    transform: translateX(40px);
+    box-shadow: 1px 1px 2px #2fa37c,
+                -1px -1px 2px #3cffb6;
+}
+
+/* 添加文字标签 */
+.slider::after {
+    content: "OFF";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-family: Arial;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+input:checked + .slider::after {
+    content: "ON";
+    left: 12px;
+    right: auto;
+    color: #fff;
+}
+
+/* 添加悬停效果 */
+.slider:hover:before {
+    transform: scale(1.1);
+    transition: .2s;
+}
+
+input:checked + .slider:hover:before {
+    transform: translateX(40px) scale(1.1);
+}
+
+/* 点击动画 */
+input:active + .slider:before {
+    transform: scale(0.9);
+}
+
+input:checked:active + .slider:before {
+    transform: translateX(40px) scale(0.9);
+}
+</style>
+</head>
+<body>
+    <h1 class="title2">服务器配置中心</h1>
+    
+    <div class="config-container">
+        <!-- 左侧配置区域 -->
+        <div>
+            <div class="config-card" style="background-color: #ffcfcf;">
+                <h3>基本设置</h3>
+                
+                <!-- 启用文件共享 -->
+                <div class="switch-group">
+                    <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="height: 24px; width: 24px;"><path d="M959.771 514c-2.283-22.714-21.456-40.447-44.771-40.447S872.511 491.286 870.229 514H870v296c0 33.137-26.863 60-60 60H214c-33.137 0-60-26.863-60-60V214c0-33.137 26.863-60 60-60h296v-0.051c0.664 0.029 1.329 0.051 2 0.051 24.853 0 45-20.147 45-45s-20.147-45-45-45c-0.671 0-1.336 0.021-2 0.051V64H124c-33.137 0-60 26.863-60 60v776c0 33.137 26.863 60 60 60h776c33.137 0 60-26.863 60-60V514h-0.229z" fill="#29ABE2"></path><path d="M940.426 279.563l-197.99-197.99c-23.431-23.432-61.421-23.432-84.853 0s-23.431 61.421 0 84.853l95.124 95.124H560.005c-110.457 0-220 109.543-220 220v214.898h0.845c4.763 28.375 29.426 50 59.155 50s54.392-21.625 59.155-50h1.542a161.971 161.971 0 0 1-0.696-14.899v-140c0-88.365 71.634-160 160-160h240c12.914 0 37.495 0.5 37.495 0.5 33.413 0 60.5-26.087 60.5-59.5 0-0.091-0.006-0.181-0.007-0.272 0.073-15.45-5.778-30.924-17.568-42.714z" fill="#29ABE2"></path></svg>
+                    <span class="switch-label">启用文件共享</span>
+                    <label class="switch">
+                        {% if config["SingleUpload"]%}
+                        <input type="checkbox" id="singleUpload">
+                        {% else %}
+                        <input type="checkbox" checked id="singleUpload">
+                        {% endif %}
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- 禁止下载 -->
+                <div class="switch-group">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                    </svg>
+                    <span class="switch-label">禁止下载</span>
+                    <label class="switch">
+                        {% if not config["download"]%}
+                        <input type="checkbox" checked id="download">
+                        {% else %}
+                        <input type="checkbox" id="download">
+                        {% endif %}
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- 禁止写入 -->
+                <div class="switch-group">
+                    <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="height: 24px; width: 24px;"><path d="M113.152 964.608H911.36l66.048-94.72c-81.92-115.2-265.216-195.584-478.208-195.584-193.024 0-361.984 66.048-452.608 164.352l66.56 125.952z" fill="#D4ECFF"></path><path d="M901.12 893.952c0 28.16-23.04 51.2-51.2 51.2H167.936c-28.16 0-51.2-23.04-51.2-51.2V130.048c0-28.16 23.04-51.2 51.2-51.2h516.096c21.504 1.024 39.936-16.384 40.96-37.888 1.024-21.504-16.384-39.936-37.888-40.96H167.936C96.256 0 38.4 57.856 37.888 129.536v763.904c0 71.68 57.856 130.048 129.536 130.048H849.92c71.68 0 129.536-58.368 130.048-130.048V295.936c-1.024-21.504-18.944-38.4-40.96-37.888-20.48 0.512-37.376 17.408-37.888 37.888v598.016z" fill="#272F35"></path><path d="M736.256 297.984l232.448-232.448c14.336-16.384 12.8-40.96-3.072-55.296-14.848-13.312-37.376-13.312-52.736 0l-232.448 231.936c-15.872 14.848-16.384 39.936-1.536 55.808 14.848 15.872 39.936 16.384 55.808 1.536l1.536-1.536M225.28 462.336c0 21.504 17.408 39.424 38.912 39.424h221.184c21.504 1.024 39.936-16.384 40.96-37.888 1.024-21.504-16.384-39.936-37.888-40.96H264.192c-21.504 0-38.912 17.92-38.912 39.424" fill="#D4ECFF"></path></svg>
+                    <span class="switch-label">禁止写入</span>
+                    <label class="switch">
+                        {% if not config["write"]%}
+                        <input type="checkbox" checked id="write">
+                        {% else %}
+                        <input type="checkbox" id="write">
+                        {% endif %}
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- 禁止目录写入 -->
+                <div class="switch-group">
+                    <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="height: 24px; width: 24px;"><path d="M855.72 866.93H167.75c-20.2 0-36.57-16.38-36.57-36.57V193.11c0-20.2 16.38-36.57 36.57-36.57H409.5c20.2 0 36.57 16.38 36.57 36.57s-16.38 36.57-36.57 36.57H204.32v564.11h614.83V410.12c0-20.2 16.38-36.57 36.57-36.57 20.2 0 36.57 16.38 36.57 36.57v420.23c0 20.2-16.37 36.58-36.57 36.58z" fill="#000000"></path><path d="M855.72 446.69H456.86c-17.2 0-32.06-11.98-35.73-28.77L373.76 200.9c-4.3-19.73 8.2-39.23 27.94-43.54 19.71-4.3 39.21 8.2 43.53 27.93l41.08 188.25h369.41c20.2 0 36.57 16.38 36.57 36.57 0 20.21-16.37 36.58-36.57 36.58z" fill="#000000"></path><path d="M783.26 446.69c-20.2 0-36.57-16.38-36.57-36.57V282.34h-325.7c-20.2 0-36.57-16.38-36.57-36.57s16.38-36.57 36.57-36.57h362.28c20.2 0 36.57 16.38 36.57 36.57v164.36c0 20.19-16.38 36.56-36.58 36.56z" fill="#000000"></path><path d="M765.49 657.25h-207.8c-20.2 0-36.57-16.38-36.57-36.57s16.38-36.57 36.57-36.57h207.79c20.2 0 36.57 16.38 36.57 36.57s-16.37 36.57-36.56 36.57z" fill="#000000"></path><path d="M661.59 761.16c-20.2 0-36.57-16.38-36.57-36.57v-207.8c0-20.2 16.38-36.57 36.57-36.57 20.2 0 36.57 16.38 36.57 36.57v207.8c0.01 20.19-16.37 36.57-36.57 36.57z" fill="#000000"></path></svg><span class="switch-label">禁止目录写入</span>
+                    <label class="switch">
+                        {% if not config["dirwrite"]%}
+                        <input type="checkbox" checked id="dirwrite">
+                        {% else %}
+                        <input type="checkbox" id="dirwrite">
+                        {% endif %}
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <!-- 文件类型检查 -->
+                <div class="switch-group">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="switch-label">文件类型检查</span>
+                    <label class="switch">
+                        {% if config["typeinspect"]%}
+                        <input type="checkbox" checked id="typeinspect">
+                        {% else %}
+                        <input type="checkbox" id="typeinspect">
+                        {% endif %}
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div class="input-group">
+                    <div style="position: relative;">
+                    <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="height: 24px; width: 24px;"><path d="M384.6656 518.2464s117.6576-290.56 371.5584-259.6352c61.9008 167.1168-156.3136 354.4576-255.488 377.6512-39.424-38.7072-116.0704-118.016-116.0704-118.016z" fill="#D9FFEC"></path><path d="M591.872 933.0176c-7.3728 0-14.7968-1.1264-22.1184-3.3792-26.2656-8.2432-45.6704-30.1568-50.5344-57.2416l-18.9952-105.0624-23.4496 7.2192c-24.1152 7.424-50.2272 0.9728-68.096-16.896l-149.7088-149.7088a67.84 67.84 0 0 1-16.896-68.096l7.2192-23.4496-105.1136-18.9952c-27.0848-4.9152-49.0496-24.2688-57.2416-50.5344s-1.2288-54.6816 18.2272-74.1888l134.7584-134.7584c13.7216-13.7216 32.7168-21.6064 52.1216-21.6064h0.256c28.16 0.1024 98.6112 0.2048 173.0048-0.4096C660.992 37.8368 884.3264 90.3168 893.952 92.672c7.2704 1.792 13.8752 5.5296 19.1488 10.8032 7.0656 7.0656 12.6464 12.6464 17.4592 61.952 3.2768 33.792 2.9184 68.7104-1.024 103.68-8.3968 74.0864-37.7344 181.9136-128.768 282.112-0.6656 74.3936-0.512 144.8448-0.4096 173.0048 0.0512 19.7632-7.5776 38.4-21.6064 52.3776L643.9424 911.36a73.54368 73.54368 0 0 1-52.0704 21.6576z m-71.168-255.1808c10.1376 0 20.1728 2.7648 29.0304 8.1408 13.6192 8.2944 23.04 22.016 25.856 37.7344l21.504 118.7328 121.2928-121.2928c-0.1024-32.512-0.2048-108.9024 0.6144-186.624 0.1024-10.4448 4.1984-20.48 11.4688-28.0064 126.8736-131.4816 125.0816-279.6032 118.1696-338.4832-58.88-6.9632-207.0016-8.7552-338.4832 118.1184a40.89856 40.89856 0 0 1-28.0064 11.4688c-77.6704 0.8192-154.112 0.7168-186.624 0.6144L174.1312 419.5328l118.7328 21.4528c15.7184 2.8672 29.44 12.288 37.7344 25.9072 8.2944 13.6192 10.3424 30.1568 5.632 45.3632l-13.4144 43.6224 137.8304 137.8304 43.6224-13.4144c5.376-1.6384 10.9056-2.4576 16.4352-2.4576z m-67.9936 18.3296c-0.0512 0.0512-0.0512 0.0512 0 0z" fill="#34333A"></path><path d="M194.1504 881.92c-17.2032 0-33.7408-6.7584-46.2848-19.2512a65.24928 65.24928 0 0 1-17.5616-60.9792l28.2624-124.16c5.3248-23.296 22.8352-41.8816 45.824-48.4864 22.9376-6.6048 47.7184-0.256 64.6144 16.64l95.8976 95.8976c16.896 16.896 23.296 41.6256 16.64 64.6144a65.6896 65.6896 0 0 1-48.4864 45.824l-124.16 28.2624c-4.9152 1.0752-9.8816 1.6384-14.7456 1.6384z m-3.4304-81.5616c-0.0512 0-0.0512 0 0 0z m41.1648-75.8784l-15.9744 70.144 70.144-15.9744-54.1696-54.1696z" fill="#3AD285"></path><path d="M749.3632 269.056m-54.9888 0a54.9888 54.9888 0 1 0 109.9776 0 54.9888 54.9888 0 1 0-109.9776 0Z" fill="#45D18B"></path></svg>
+                    <label>文件并发处理启用最大数量：</label>
+                        <label class="switch" style="position: absolute;right: 0;">
+                            {% if config["asyncStart"]%}
+                            <input type="checkbox" checked id="asyncStart" onclick="asynstart(this.checked)" title="加速加载文件">
+                            {% else %}
+                            <input type="checkbox" id="asyncStart" onclick="asynstart(this.checked)" title="加速加载文件">
+                            {% endif %}
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    {% if config["asyncStart"]%}
+                    <input type="number" value="{{config["asyncMax"]}}" id="asynMax" title="多少文件数量触发异步加载,建议文件数量超过2000时启用">
+                    {% else %}
+                    <input type="number" value="{{config["asyncMax"]}}" style="cursor: not-allowed;" id="asynMax" disabled  title="多少文件数量触发异步加载,建议文件数量超过2000时启用">
+                    {% endif %}
+                    <span class="unit">MAX</span>
+                    
+                </div>
+
+                <!-- 单文件最大上传限制 -->
+                <div class="input-group">
+                    <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="height: 24px; width: 24px;"><path d="M768.7168 365.9264c-15.9232-125.6448-123.136-222.8224-253.0816-222.8224S278.4256 240.2816 262.5024 365.9264c-116.1216 25.088-203.1616 128.3072-203.1616 251.9552 0 142.3872 115.456 257.8432 257.8432 257.8432h396.9024c142.3872 0 257.8432-115.456 257.8432-257.8432-0.0512-123.5968-87.0912-226.8672-203.2128-251.9552z" fill="#FF5D50"></path><path d="M591.872 571.5968v189.8496c0 15.104-12.2368 27.3408-27.3408 27.3408H466.688c-15.104 0-27.3408-12.2368-27.3408-27.3408v-189.8496H352.0512c-23.9616 0-36.352-28.6208-19.9168-46.08l163.5328-174.2336a27.33568 27.33568 0 0 1 39.8848 0l163.5328 174.2336c16.384 17.4592 3.9936 46.08-19.9168 46.08H591.872z" fill="#FFDF99"></path></svg>
+                    <label>单文件最大上传限制：</label>
+                    <input type="number" value="{{config["FileMax"]}}" id="fileMax">
+                    <span class="unit">MB</span>
+                </div>
+                
+                <!-- 服务器目录最大容量限制 -->
+                <div class="input-group">
+                    <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="height: 24px; width: 24px;"><path d="M1009.06583799 168.961425c2.474663-21.73863001-19.88263399-36.58660601-40.36259899-35.541274C788.479539 143.361468 532.47996601 6.935028 529.91997001 5.37769799c-1.02399799-0.533332-1.535997-1.066665-2.55999602-1.57866398-14.847975-7.317321-32.25594601-3.64799401-43.51992699 7.31732099-49.663917 25.08795799-267.77555401 131.199781-428.543286 122.837128C34.816795 132.886819 17.408824 148.054793 15.360828 168.961425c-58.367903 515.327141 202.239663 799.636001 487.423187 853.993243 3.071995 0.533332 6.14398999 1.045332 9.215985 1.045332h6.655989c205.823657-38.143936 373.759377-189.20501799 449.535251-404.521992 7.167988-20.373299 6.186656-37.546604-13.781311-45.39725801-19.967967-7.317321-38.89060201 0-46.14392301 22.549296-60.970565 186.410356-221.674297 327.380788-396.77800499 362.38872901C287.232375 914.09085001 27.43547401 687.957893 79.80872 201.238705c168.447719-5.22665799 372.799379-105.535824 431.679281-135.317108C574.463896 97.281545 777.21555799 201.750704 947.199275 201.750704c7.167988 0 14.335976 0 21.503964-0.511999 20.991965-1.066665 37.887937-10.538649 40.36259901-32.27728z" fill="#000000"></path><path d="M277.333724 727.55249399V256.00128h158.719736v49.663917l-38.911935 136.19177301c28.671952 38.399936 42.495929 79.871867 40.959931 123.39179499 1.535997 54.783909-18.431969 83.96786-59.9039 86.527855-8.19198599 1.535997-19.455968 2.047997-32.767945 2.047997-1.535997-2.559996-2.559996-6.655989-4.09599301-12.28798-4.095993-17.91997001-8.19198599-31.743947-12.28798-40.95993099h30.71994901c20.47996601 1.535997 30.719949-13.823977 30.719949-45.567924 1.535997-32.767945-12.28798-67.071888-40.959932-102.91182901l38.911935-146.431756h-61.951896v422.399296H277.333724v-0.51199899z m453.119245-10.23998299c-94.71984201-39.935933-153.599744-108.543819-177.151705-205.82365701h-36.86393799v148.47975301c4.095993-1.535997 11.77598-4.095993 22.52796199-8.191987 9.727984-5.631991 28.671952-13.823977 57.855904-24.575959 0 6.655989 0.511999 17.407971 2.047997 30.71994899v18.43196901c-12.28798 4.095993-31.743947 11.77598-57.855904 22.52796299-12.28798 4.095993-21.503964 7.679987-26.623956 10.23998301-1.535997 0-2.559996 0.511999-4.095993 2.047996-13.823977 5.631991-24.575959 10.75198201-32.767945 16.38397299l-26.623956-43.007928c12.28798-10.75198201 17.91997001-24.575959 16.383973-40.959932V258.049277h249.343584v253.43957701h-111.103815c8.19198599 26.111956 17.91997001 48.639919 28.67195299 68.09588699 31.743947-19.455968 59.9039-38.399936 84.47985901-57.855904l30.71994899 38.911935c-6.655989 4.095993-17.407971 10.239983-30.71994899 18.43197001-24.575959 15.35997399-43.007928 26.623956-55.80790701 34.81594199 22.015963 22.015963 54.27190999 40.447933 96.76783901 55.807907a670.12154999 670.12154999 0 0 0-29.183952 47.61592zM515.925327 305.665197v57.855904h150.527749v-57.855904h-150.527749z m0 158.20773701h150.527749v-57.34390501h-150.527749v57.34390501z" fill="#000000"></path></svg>
+                    <label>服务器目录最大容量限制：</label>
+                    <input type="number" value="{{config["sysMax"]}}" min="0.5" max="12" id="sysMax">
+                    <span class="unit">GB</span>
+                </div>
+                
+                <!-- 服务器目录最大下载限制 -->
+                <div class="input-group">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    <label>服务器目录最大下载限制：</label>
+                    <input type="number" value="{{config["download_Dir"]}}" id="download_Dir" title="建议区间0.5-10,以服务器可使用内存为准">
+                    <span class="unit">GB</span>
+                </div>
+                
+                <!-- 服务器最大下载速度限制 -->
+                <div class="input-group">
+                    <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="height: 24px; width: 24px;"><path d="M709.26 683.38c-151.5 0-401.15-0.8-405.73-0.82-66.44-0.03-122.26-50.16-132.74-119.22-8.16-53.79 14.09-125.59 99.13-163.75-19.81-84.33 27.73-155.39 91.49-185.3 39.85-18.7 84.31-21.4 125.19-7.59 35.91 12.13 67.19 36.28 91.82 70.61 37.75-21.3 82.48-22.78 119.53-2.03 32.04 17.94 61.42 56.46 58.26 114.08 81.53 24.54 114.74 95.02 110.37 155.84-4.79 66.55-56.06 138.18-157.31 138.18z" fill="#EFB6D2"></path><path d="M651.67 642.56c-16.92-16.92-44.34-16.92-61.25 0l-29 29V502.32c0-23.92-19.39-43.31-43.31-43.31s-43.31 19.39-43.31 43.31v169.27l-29.03-29.03c-16.92-16.91-44.34-16.91-61.26 0-16.91 16.92-16.91 44.34 0 61.26L487.09 806.4c8.51 8.51 19.67 12.73 30.83 12.68h0.36c11.15 0.05 22.31-4.18 30.81-12.68l102.58-102.58c16.91-16.92 16.91-44.34 0-61.25z" fill="#ED6BB0"></path><path d="M741.67 508.69l-21.07 40.77c-3.86 7.48-14.56 7.48-18.43 0l-21.07-40.77a10.386 10.386 0 0 1 0-9.52l21.07-40.77c3.86-7.48 14.56-7.48 18.43 0l21.07 40.77c1.54 2.99 1.54 6.54 0 9.52z" fill="#FFFFFF"></path><path d="M706.63 534.21l-40.77-21.07c-7.48-3.86-7.48-14.56 0-18.43l40.77-21.07c2.99-1.54 6.54-1.54 9.52 0l40.77 21.07c7.48 3.86 7.48 14.56 0 18.43l-40.77 21.07a10.386 10.386 0 0 1-9.52 0z" fill="#FFFFFF"></path></svg>
+                    <label>服务器最大下载速度限制：</label>
+                    <input type="number" value="{{config["MaxSpeed"]}}" id="MaxSpeed"  style="cursor: not-allowed;" disabled="" title="暂不适用">
+                    <span class="unit">MB</span>
+                </div>
+            </div>
+
+            <div class="config-card" style="background-color: #cbfdff;">
+                <h3>目录设置</h3>
+                
+                <!-- 共享目录位置 -->
+                <div class="input-group">
+                    <svg class="icon" style="vertical-align: middle; overflow: hidden; height: 24px; width: 24px;" viewBox="0 0 1044 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M880.015216 0a163.838067 163.838067 0 1 1-158.656688 204.797583H222.205378v266.236859h698.769354v430.074925H342.40108a163.838067 163.838067 0 1 1 0-81.919033h496.695579V552.953475H140.286345V122.87855h581.031223c18.186025-70.655166 82.328629-122.87855 158.697648-122.87855z m-696.311784 778.230817a81.919033 81.919033 0 1 0 0 163.838067 81.919033 81.919033 0 0 0 0-163.838067z m696.311784-696.311784a81.919033 81.919033 0 1 0 0 163.838067 81.919033 81.919033 0 0 0 0-163.838067z"></path></svg>
+                    <label>共享目录位置：</label>
+                    <input type="text" value="{{config["FileCataloguePath"]}}" id="fileCataloguePath">
+                </div>
+                
+                <!-- 服务器存储目录 -->
+                <div class="input-group">
+                    <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="height: 24px; width: 24px;"><path d="M298.666667 298.666667h213.333333v85.333333H298.666667v-85.333333zM298.666667 640h213.333333v85.333333H298.666667v-85.333333z" fill="#0078FF"></path><path d="M128 170.666667a42.666667 42.666667 0 0 1 42.666667-42.666667h682.666666a42.666667 42.666667 0 0 1 42.666667 42.666667v341.333333a42.666667 42.666667 0 0 1-42.666667 42.666667H170.666667a42.666667 42.666667 0 0 1-42.666667-42.666667V170.666667z m85.333333 42.666666v256h597.333334V213.333333H213.333333z" fill="#000000"></path><path d="M128 512a42.666667 42.666667 0 0 1 42.666667-42.666667h682.666666a42.666667 42.666667 0 0 1 42.666667 42.666667v341.333333a42.666667 42.666667 0 0 1-42.666667 42.666667H170.666667a42.666667 42.666667 0 0 1-42.666667-42.666667V512z m85.333333 42.666667v256h597.333334V554.666667H213.333333z" fill="#000000"></path><path d="M725.333333 341.333333a42.666667 42.666667 0 1 1-85.333333 0 42.666667 42.666667 0 0 1 85.333333 0zM725.333333 682.666667a42.666667 42.666667 0 1 1-85.333333 0 42.666667 42.666667 0 0 1 85.333333 0z" fill="#000000"></path></svg>
+                    <label>服务器存储目录：</label>
+                    <input type="text" value="{{config["SysCataloguePath"]}}" id="sysCataloguePath">
+                </div>
+            </div>
+            <div class="config-card">
+                <div class="speed-container">
+                  <!-- 下载速度 -->
+                  <div class="speed-item download">
+                    <div class="icon-container">
+                      <svg class="speed-icon" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                      </svg>
+                    </div>
+                    <div class="speed-data">
+                      <div class="title">下载速度</div>
+                      <div class="value animate-pulse" id="sent">Nan<span class="unit">Mbps</span></div>
+                    </div>
+                  </div>
+              
+                  <!-- 分隔线 -->
+                  <div class="divider"></div>
+              
+                  <!-- 上传速度 -->
+                  <div class="speed-item upload">
+                    <div class="icon-container">
+                      <svg class="speed-icon" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                      </svg>
+                    </div>
+                    <div class="speed-data">
+                      <div class="title">上传速度</div>
+                      <div class="value animate-pulse" id="recv">Nan<span class="unit">Mbps</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+        </div>
+
+        <!-- 右侧配置区域 -->
+        <div>
+            <div class="config-card" style="background-color: #cbffd7;">
+                <h3>安全设置</h3>
+                <!-- 管理文件类型 -->
+                <button class="btn btn-primary" onclick="showFileTypeModal()">
+                    <svg class="icon2" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="height: 20px; width: 20px;"><path d="M817.539 384c31.419 0 56.889 25.47 56.889 56.889v440.889c0 31.419-25.47 56.889-56.89 56.889H589.984c-31.419 0-56.889-25.47-56.889-56.89V440.89c0-31.419 25.47-56.889 56.89-56.889h227.555z m-28.49 85.333H618.382v384H789.05v-384zM433.778 85.333c31.419 0 56.889 25.47 56.889 56.89V583.11c0 31.419-25.47 56.889-56.89 56.889H206.223c-31.419 0-56.889-25.47-56.889-56.889V142.222c0-31.419 25.47-56.889 56.89-56.889h227.555z m-28.445 85.334H234.667v384h170.666v-384zM817.539 85.333c31.419 0 56.889 25.47 56.889 56.89v142.221c0 31.42-25.47 56.89-56.89 56.89H589.984c-31.419 0-56.889-25.47-56.889-56.89V142.222c0-31.419 25.47-56.889 56.89-56.889h227.555z m-28.49 85.334H618.382V256H789.05v-85.333z" fill="#333333"></path><path d="M433.778 682.667c31.419 0 56.889 25.47 56.889 56.889v142.222c0 31.419-25.47 56.889-56.89 56.889H206.223c-31.419 0-56.889-25.47-56.889-56.89V739.557c0-31.42 25.47-56.89 56.89-56.89h227.555zM405.333 768H234.667v85.333h170.666V768z" fill="#EF502F"></path></svg>
+                    管理文件类型
+                </button>
+                <!-- 管理IP黑名单 -->
+                <button class="btn btn-primary" onclick="showIPModal()">
+                    <svg class="icon2" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                    管理IP黑名单
+                </button>
+                <button class="btn btn-primary" onclick="showIPWhiteModal()">
+                    <svg class="icon2" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                    管理IP白名单
+                </button>
+                <div class="switch-group">
+                    <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="height: 20px; width: 20px;"><path d="M526.04 957.29c-14.65 0-29.27-4.1-42.19-12.27L192.74 760.88c-23-14.55-36.74-39.49-36.74-66.71V271.56c0-38.87 27.84-71.64 66.2-77.91C305.95 179.96 455.89 157 519 157c70.88 0 240.63 23.32 335.51 37.21a78.966 78.966 0 0 1 48.28 26.49A78.945 78.945 0 0 1 922 272.31v420.67c0 27.94-14.98 54.05-39.1 68.15L565.89 946.45c-12.37 7.23-26.12 10.84-39.85 10.84zM519 212c-61.44 0-221.83 25.13-287.93 35.93-11.63 1.9-20.07 11.84-20.07 23.63v422.61c0 8.26 4.17 15.82 11.14 20.23l291.11 184.13c7.59 4.8 17.13 4.97 24.88 0.44l317.01-185.31c7.31-4.28 11.86-12.2 11.86-20.67V272.32c0-11.79-8.8-21.98-20.46-23.69C771.34 237.62 588.91 212 519 212z" fill="#D0E2FA"></path><path d="M493 682.62c-6.49 0-12.98-2.29-18.18-6.87l-160-141c-11.4-10.04-12.49-27.42-2.45-38.81 10.04-11.4 27.42-12.49 38.81-2.45l141.58 124.76 233.79-211.53c11.26-10.19 28.65-9.32 38.84 1.94 10.19 11.26 9.32 28.65-1.94 38.84l-252 228a27.37 27.37 0 0 1-18.45 7.12z" fill="#3376E5"></path></svg>
+                    <span class="switch-label">仅启用白名单</span>
+                    <label class="switch">
+                        {% if config["IPwhiteStart"]%}
+                        <input type="checkbox" checked id="whiteList">
+                        {% else %}
+                        <input type="checkbox" id="whiteList">
+                        {% endif %}
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            
+            
+            <div class="config-card" style="border-color: #e2cbff;">
+                <h3>文件上传记录</h3>
+                <div class="record-list">
+                    {% if config["log"]["upload"] %}
+                        {% for file in config["log"]["upload"] %}
+                        <p>
+                            <svg class="icon2" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            </svg>
+                            {{file}}
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>暂无上传记录</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="config-card" style="background-color: #ffcbfc;">
+                <h3>文件下载记录</h3>
+                <div class="record-list">
+                    {% if config["log"]["download"] %}
+                        {% for file in config["log"]["download"] %}
+                        <p>
+                            <svg class="icon2" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            {{file}}
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>暂无下载记录</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="config-card" style="background-color: #f3ffcb;">
+                <h3>服务器错误记录</h3>
+                <div class="record-list">
+                    {% if config["log"]["error"] %}
+                        {% for error in config["log"]["error"] %}
+                        <p>
+                            <svg class="icon2" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {{error}}
+                        </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>暂无错误记录</p>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- <div class="config-card">
+                <button class="btn btn-primary" style="width: 100%" onclick="setConfig()">
+                    <svg class="icon2" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                    </svg>
+                    保存当前配置
+                </button>
+                <button class="btn btn-danger" style="width: 100%; margin-top: 15px" onclick="confirmOpenFile()">
+                    <svg class="icon2" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                    关闭服务器
+                </button>
+                <button class="btn btn-danger" style="width: 100%; margin-top: 15px; background-color: black;" onclick="window.location.href='/logout'">
+                    <svg class="icon2" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    退出账户
+                </button>
+                <button class="btn btn-danger" style="width: 100%; margin-top: 15px; background-color: rgb(146, 103, 255);" onclick="saveconfig(true)">
+                    <svg class="icon2" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    保存配置至本地
+                </button>
+                <button class="btn btn-danger" style="width: 100%; margin-top: 15px; background-color: rgb(255, 103, 237);" onclick="saveconfig(false)">
+                    删除本地配置
+                </button>
+            </div> -->
+            <div class="config-card2">
+                <!-- 第一行 -->
+                <div class="dynamic-row row-1">
+                    <button class="dynamic-btn" data-size="2" style="--base-width:240px;background:  #6366f1;" onclick="setConfig()">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                        </svg>保存配置</button>
+                    <button class="dynamic-btn" data-size="1" style="--base-width:180px;background: #8b5cf6;" onclick="confirmOpenFile()">
+                        <svg class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" style="height: 20px; width: 20px;"><path d="M270.634667 252.970667a42.666667 42.666667 0 0 1 3.541333 56.32l-3.541333 4.010666a341.333333 341.333333 0 1 0 482.730666 0 42.666667 42.666667 0 0 1 56.32-63.872l4.010667 3.541334A425.344 425.344 0 0 1 938.666667 554.666667c0 235.648-191.018667 426.666667-426.666667 426.666666S85.333333 790.314667 85.333333 554.666667a425.344 425.344 0 0 1 124.586667-301.269334l0.384-0.426666a42.666667 42.666667 0 0 1 60.330667 0zM512 42.666667a42.666667 42.666667 0 0 1 42.666667 42.666666v426.666667a42.666667 42.666667 0 0 1-85.333334 0V85.333333a42.666667 42.666667 0 0 1 42.666667-42.666666z" fill="#FFFFFF"></path></svg>关闭服务器</button>
+                </div>
+            
+                <!-- 第二行 -->
+                <div class="dynamic-row row-2">
+                    
+                    <button class="dynamic-btn" data-size="3" style="--base-width:300px;background: #84cc16;" onclick="saveconfig(true)">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>保存当前服务端配置至本地</button>
+                        <button class="dynamic-btn" data-size="1" style="--base-width:180px;background: #10b981;" onclick="window.location.href='/logout'">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>退出账户</button>
+                </div>
+            
+                <!-- 第三行 -->
+                <div class="dynamic-row row-3">
+                    <button class="dynamic-btn" data-size="2" style="--base-width:240px;background: #f97316;" onclick="saveconfig(false)">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>删除配置</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 文件类型弹窗 -->
+    <div id="fileTypeModal" class="modal">
+        <div class="modal-content">
+            <h3>允许的文件类型</h3>
+            <div id="tagsContainer">
+                {% for type in config["type"] %}
+                <div class="tag type"><a>{{type}}</a><span class="tag-remove" onclick="this.parentElement.remove()">×</span></div>
+                {% endfor %}
+            </div>
+            <input type="text" id="newTag" placeholder="输入新类型" onchange="">
+            <button class="btn btn-primary" onclick="addTag()">添加</button>
+            <button class="btn" onclick="closeModal('fileTypeModal')">关闭</button>
+        </div>
+    </div>
+
+    <!-- IP黑名单弹窗 -->
+    <div id="ipModal" class="modal">
+        <div class="modal-content">
+            <h3>IP黑名单管理</h3>
+            <input type="text" id="newIP" placeholder="输入IP地址">
+            <button class="btn btn-primary" onclick="addIP()">添加</button>
+            <div id="ipList" class="record-list" style="margin-top: 15px">
+                {% for ip in config["IPsecure"] %}
+                <div class="tag ip"><a>{{ip}}</a><span class="tag-remove" onclick="this.parentElement.remove()">×</span></div>
+                {% endfor %}
+            </div>
+            <button class="btn" onclick="closeModal('ipModal')">关闭</button>
+        </div>
+    </div>
+    <!-- IP白名单弹窗 -->
+    <div id="ipwhiteModal" class="modal">
+        <div class="modal-content">
+            <h3>IP白名单管理</h3>
+            <input type="text" id="newIPWhite" placeholder="输入IP地址">
+            <button class="btn btn-primary" onclick="addIPWhite()">添加</button>
+            <div id="ipwhiteList" class="record-list" style="margin-top: 15px">
+                {% for ip2 in config["IPwhiteList"] %}
+                <div class="tag ipwhite"><a>{{ip2}}</a><span class="tag-remove" onclick="this.parentElement.remove()">×</span></div>
+                {% endfor %}
+            </div>
+            <button class="btn" onclick="closeModal('ipwhiteModal')">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('newTag').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' || event.keyCode === 13) {
+                addTag(); // 执行你的函数
+            }
+        });
+        document.getElementById('newIP').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' || event.keyCode === 13) {
+                addIP(); // 执行你的函数
+            }
+        });
+        document.getElementById('newIPWhite').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' || event.keyCode === 13) {
+                addIPWhite(); // 执行你的函数
+            }
+        });
+
+
+        let asynsnum = document.getElementById('asynMax').value;
+        function asynstart(checkedon){
+            let asyns = document.getElementById('asynMax');asyns.disabled = !checkedon;asyns.style.cursor = checkedon ? 'auto' : 'not-allowed';if(!checkedon){asyns.value = '';}else{asyns.value = asynsnum;}
+        }
+
+
+        function createDialog(title, content, isWarning = false) {
+            const overlay = document.createElement('div')
+            overlay.className = 'dialog-overlay'
+            overlay.style.position = 'fixed';
+            overlay.style.height = '100vh';
+            overlay.style.marginLeft = '20%';
+            overlay.style.alignItems = 'center';
+            overlay.style.zIndex = '999';
+            
+            const dialog = document.createElement('div')
+            dialog.className = `dialog ${isWarning ? 'warning' : ''}`
+            
+            dialog.innerHTML = `
+            <div class="dialog-title">${title}</div>
+            <div class="dialog-content">${content}</div>
+            <div class="dialog-actions">
+                <button class="dialog-button cancel-btn">取消</button>
+                <button class="dialog-button confirm-btn">确定</button>
+            </div>
+            `
+
+            overlay.appendChild(dialog)
+            if (document.body.firstChild){
+                document.body.insertBefore(overlay, document.body.firstChild)
+            }else{
+                document.body.appendChild(overlay)
+            }
+            
+            // 显示动画
+            setTimeout(() => {
+            overlay.style.display = 'flex'
+            setTimeout(() => dialog.classList.add('active'), 10)
+            }, 10)
+
+            return new Promise((resolve) => {
+            dialog.querySelector('.confirm-btn').addEventListener('click', () => {
+                closeDialog(true)
+            })
+            
+            dialog.querySelector('.cancel-btn').addEventListener('click', () => {
+                closeDialog(false)
+            })
+
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closeDialog(false)
+            })
+
+            const closeDialog = (result) => {
+                dialog.classList.remove('active')
+                setTimeout(() => {
+                overlay.remove()
+                resolve(result)
+                }, 300)
+            }
+            })
+        }
+
+        async function confirmOpenFile() {
+            getding = document.querySelector('.dialog-overlay')
+            if (!getding) {
+                const firstConfirm = await createDialog(
+            '操作确认',
+            '你确定要关闭服务器吗?'
+            )
+            
+            if (!firstConfirm) return false
+            
+            const secondConfirm = await createDialog(
+            '风险警告',
+            '关闭服务器后,正在下载的用户将无法继续下载',
+            true
+            )
+            
+            if (secondConfirm){
+                window.location.href='/shutdown'
+            }
+            }
+        }
+
+        // 标签管理
+        function showFileTypeModal() {
+            document.getElementById('fileTypeModal').style.display = 'flex';
+        }
+
+        function addTag() {
+            const input = document.getElementById('newTag');
+            if (input.value) {
+                let tagContainer = document.getElementById('tagsContainer')
+                let seek = tagContainer.querySelectorAll('a');
+                for (let i = 0; i < seek.length; i++) {
+                    if (seek[i].textContent === input.value) {
+                        showTempAlert('该类型已存在')
+                        return;
+                    }
+                }
+                const tag = document.createElement('div');
+                tag.className = 'tag type';
+                tag.innerHTML = `<a>${input.value}</a><span class="tag-remove" onclick="this.parentElement.remove()">×</span>`;
+                tagContainer.appendChild(tag);
+                input.value = '';
+            }
+        }
+
+        // IP管理
+        function showIPModal() {
+            document.getElementById('ipModal').style.display = 'flex';
+        }
+
+        function addIP() {
+            const input = document.getElementById('newIP');
+            if (input.value) {
+                let ipContainer = document.getElementById('ipList')
+                let seek = ipContainer.querySelectorAll('a');
+                for (let i = 0; i < seek.length; i++) {
+                    if (seek[i].textContent === input.value) {
+                        showTempAlert('该IP已存在')
+                        return;
+                    }
+                }
+                const ip = document.createElement('div');
+                ip.className = 'tag ip';
+                ip.innerHTML = `<a>${input.value}</a><span class="tag-remove" onclick="this.parentElement.remove()">×</span>`;
+                ipContainer.appendChild(ip);
+                input.value = '';
+            }
+        }
+
+        function showIPWhiteModal() {
+            document.getElementById('ipwhiteModal').style.display = 'flex';
+        }
+
+        function addIPWhite() {
+            const input = document.getElementById('newIPWhite');
+            if (input.value) {
+                let ipContainer = document.getElementById('ipwhiteList')
+                let seek = ipContainer.querySelectorAll('a');
+                for (let i = 0; i < seek.length; i++) {
+                    if (seek[i].textContent === input.value) {
+                        showTempAlert('该IP已存在')
+                        return;
+                    }
+                }
+                const ip = document.createElement('div');
+                ip.className = 'tag ipwhite';
+                ip.innerHTML = `<a>${input.value}</a><span class="tag-remove" onclick="this.parentElement.remove()">×</span>`;
+                ipContainer.appendChild(ip);
+                input.value = '';
+            }
+        }
+
+        // 通用关闭
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // 点击外部关闭弹窗
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        }
+
+
+        function setConfig() {
+            const saveSingleUpload = document.getElementById('singleUpload').checked;
+            const saveDownload = document.getElementById('download').checked;
+            const saveWrite = document.getElementById('write').checked;
+            const savedirWrite = document.getElementById('dirwrite').checked;
+            const saveFileMax = document.getElementById('fileMax').value;
+            const saveSysMax = document.getElementById('sysMax').value;
+            const saveFileCataloguePath = document.getElementById('fileCataloguePath').value;
+            const saveSysCataloguePath = document.getElementById('sysCataloguePath').value;
+            const filetype = document.querySelectorAll('.type a');
+            const ipList = document.querySelectorAll('.ip a');
+            const MaxSpeed = document.getElementById('MaxSpeed').value;
+            const typeinspect = document.getElementById('typeinspect').checked;
+            const download_Dir = document.getElementById('download_Dir').value;
+            const asyncMax = document.getElementById('asynMax').value;
+            const asynStart = document.getElementById('asyncStart').checked;
+            console.log(asynStart)
+            const IPwhite = document.querySelectorAll('.ipwhite a');
+            const IPwhiteStart = document.getElementById('whiteList').checked;
+            if (MaxSpeed < 10 || MaxSpeed > 1024) {
+                alert('下载速度限制必须在10~1024MB之间');
+                return -1;
+            }
+            if (saveFileMax === '' || saveSysMax === '' || download_Dir === '') {
+                    alert('请正确填写参数');
+                    return -1;
+                }
+            const dataType = [];
+            const ipData = [];
+            const ipWhiteData = [];
+            for (let i = 0; i < filetype.length; i++) {
+                dataType.push(filetype[i].innerHTML);
+            }
+            for (let i = 0; i < ipList.length; i++) {
+                ipData.push(ipList[i].innerHTML);
+            }
+            for (let i = 0; i < IPwhite.length; i++) {
+                ipWhiteData.push(IPwhite[i].innerHTML);
+            }
+            // console.log(dataType, ipData, ipWhiteData);
+            
+            const config = {"SingleUpload":!saveSingleUpload,"download":!saveDownload,"write":!saveWrite,"dirwrite":!savedirWrite,"FileMax":saveFileMax,"sysMax":saveSysMax,"FileCataloguePath":saveFileCataloguePath,"SysCataloguePath":saveSysCataloguePath,"type":dataType,"IPsecure":ipData,"typeinspect":typeinspect,"download_Dir":download_Dir,"asyncStart":asynStart,"IPwhiteStart":IPwhiteStart,"IPwhiteList":ipWhiteData}
+            if (asynStart){
+                if (asyncMax !== ''){
+                    config["asyncMax"] = asyncMax;
+                }else{
+                    alert('请正确填写异步线程数');
+                    return -1;
+                }
+                
+            }   
+
+            // 使用XMLHttpRequest或fetch API发送文件到服务器
+            fetch('/set_config', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(config)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Start:', config);
+                console.log('Upload success:', data);
+                alert(data.code);
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+            });
+        }
+
+        let speedInterval;
+        let sent = document.getElementById('sent'); 
+        let recv = document.getElementById('recv');
+        setInterval(updateSpeed, 1000);
+        function updateSpeed() {
+            fetch('/port', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({"refresh": "get_speed"})
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Upload success:', data.sent, data.recv);
+                sent.innerHTML = data.sent + '<span class="unit">Mbps</span>';
+                recv.innerHTML = data.recv + '<span class="unit">Mbps</span>';
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+            });
+        }
+
+        function saveconfig(pathif){
+            let path = pathif ? 'save_config' : 'drop_config';
+            fetch(`/${path}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.code);
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+            });
+        }
+
+        function showTempAlert(message) {
+         // 1. 创建弹窗元素
+        const alertBox = document.createElement('div');
+        alertBox.className = 'alert-box';
+        const margintop = 70 * document.getElementsByClassName('alert-box').length;
+        // 2. 设置基础样式（可自定义）
+        Object.assign(alertBox.style, {
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: '20px 30px',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            color: 'white',
+            borderRadius: '8px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            zIndex: '1000',
+            fontSize: '16px',
+            transition: 'opacity 0.3s ease',
+            marginTop: `${margintop}px`,
+            opacity: '0' // 初始透明用于渐显动画
+        });
+
+        // 3. 添加文本内容
+        alertBox.textContent = message;
+
+        // 4. 插入到页面
+        document.body.appendChild(alertBox);
+
+        // 5. 触发渐显动画
+        setTimeout(() => {
+            alertBox.style.opacity = '1';
+        }, 10);
+
+        // 6. 2秒后自动消失
+        setTimeout(() => {
+            alertBox.style.opacity = '0';
+            // 动画完成后移除元素
+            setTimeout(() => {
+            document.body.removeChild(alertBox);
+            }, 300);
+        }, 2000);
+        }
+    </script>
+</body>
+</html>

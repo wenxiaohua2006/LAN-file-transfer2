@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件下载</title>
+    <style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+}
+
+.file-browser {
+    max-width: 600px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+details {
+    margin-bottom: 5px;
+}
+
+summary {
+    font-weight: bold;
+    cursor: pointer;
+    padding: 10px;
+    background: linear-gradient(to right,rgb(161, 193, 205),#ffffff);
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease-in-out;
+    height: 30px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+summary:hover {
+    animation: key 0.5s ease-in-out;
+    height: 50px;
+}
+@keyframes key {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* summary:hover {
+    background-color: #f1f1f1;
+} */
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    margin-left: 20px;
+    border-left: 2px solid #ddd;
+    background-color: #e8e8e8;
+    transition: all 0.3s ease-in-out;
+    height: 30px;
+}
+
+.file-item:hover {
+    background-color: #f9f9f9 !important;
+    height: 50px;
+}
+
+.file-name {
+    flex-grow: 1;
+    margin-right: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.download-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    min-width: 48px;
+}
+.close-button {
+    color: black;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 10px;
+    display: none;
+}
+
+.close-button:hover {
+    background-color: #f9f9f9;
+}
+.download-button:hover {
+    background-color: #0056b3;
+}
+
+/* 动态缩进 */
+details details {
+    margin-left: 20px;
+}
+
+details details details {
+    margin-left: 40px;
+}
+
+details details details details {
+    margin-left: 60px;
+}
+
+
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --success-color: #27ae60;
+    --background: #f8f9fa;
+    --text-color: #2c3e50;
+}
+
+.file-directory {
+    width: 320px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+    transition: all 0.2s ease-in-out;
+    margin-left: -520px;
+    display: none;
+    opacity: 0;
+}
+
+.file-directory:hover {
+    transform: translateY(-2px);
+}
+
+.directory-header {
+    padding: 20px;
+    background: var(--primary-color);
+    color: white;
+}
+
+.folder-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+}
+
+.directory-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 8px 0;
+}
+
+.directory-path {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    word-break: break-all;
+}
+
+.metadata {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: var(--background);
+    border-bottom: 1px solid #eee;
+}
+
+.meta-item {
+    text-align: center;
+}
+
+.meta-label {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.meta-value {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.download-section {
+    padding: 20px;
+    text-align: center;
+}
+
+.download-btn {
+    background: var(--success-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.download-btn:hover {
+    background: #219a52;
+    transform: scale(1.05);
+}
+
+.download-btn:active {
+    transform: scale(0.98);
+}
+
+.loading .download-btn {
+    background: #95a5a6 !important;
+    cursor: progress;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* 弹窗容器 */
+.dialog {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    min-width: 320px;
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+/* 弹窗激活状态 */
+.dialog.active {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* 弹窗标题 */
+.dialog-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+/* 弹窗内容 */
+.dialog-content {
+    color: #666;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+/* 按钮容器 */
+.dialog-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+/* 通用按钮样式 */
+.dialog-button {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+/* 确认按钮 */
+.confirm-btn {
+    background: #007bff;
+    color: white;
+}
+
+.confirm-btn:hover {
+    background: #0056b3;
+}
+
+/* 取消按钮 */
+.cancel-btn {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.cancel-btn:hover {
+    background: #e0e0e0;
+}
+
+/* 危险状态 */
+.dialog.warning .confirm-btn {
+    background: #dc3545;
+}
+
+.dialog.warning .confirm-btn:hover {
+    background: #bb2d3b;
+}
+.content {
+  max-height: 100px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+    </style>
+</head>
+<body>
+    <div class="file-browser">
+        <h1>文件下载</h1>
+        <div id="fileList"></div>
+    </div>
+
+
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://127.0.0.1:5000');
+    
+        socket.on('connect', () => {
+            console.log('Connected to server');  // 添加日志以确认连接
+        });
+    
+        socket.on('update', (data) => {
+            console.log('实时时间:', data.time);
+        });
+    
+        socket.on('server_push', (msg) => {
+            console.log('系统消息:', msg.status);
+        });
+    </script> -->
+    <script>
+
+var coincide = false;
+
+function getFileTypeIcon(fileName) {
+    const ext = fileName.split('.').pop().toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+        return '🖼️'; // 图片文件图标
+    } else if (['txt', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
+        return '📄'; // 文本文件图标
+    } else if (['mp3', 'wav', 'ogg'].includes(ext)) {
+        return '🎵'; // 音频文件图标
+    } else if (['mp4', 'avi', 'mov'].includes(ext)) {
+        return '🎥'; // 视频文件图标
+    } else if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'].includes(ext)) {
+        return '📦'; // 压缩文件图标
+    } else if (['exe', 'dll', 'bat'].includes(ext)) {
+        return '🗿'; // 可执行文件图标
+    } else if (['md', 'rst', 'txt', 'log'].includes(ext)) {
+        return '📃'; // 文档文件图标
+    } else if (ext == 'py'){
+        return '🐍'; // Python文件图标
+    } else if (ext == 'css'){
+        return '🎨'; // CSS文件图标
+    } else if (ext == 'html'){
+        return '🌐'; // HTML文件图标
+    } else if (ext == 'js'){
+        return '🤖'; // JavaScript文件图标
+    } else if (ext == 'json'){
+        return '🔧'; // JSON文件图标
+    } else if (ext == 'xml'){
+        return '🌈'; // XML文件图标
+    } else if (['yaml', 'yml'].includes(ext)){
+        return '🐈'; // YAML文件图标
+    } else if (ext == 'go'){
+        return '🐹'; // Go文件图标
+    } else if (ext == 'php'){
+        return '🐘'; // PHP文件图标
+    } else {
+        return '❓'; // 未知文件图标
+    }
+}   
+
+
+function createDialog(title, content, isWarning = false) {
+    const overlay = document.createElement('div')
+    overlay.className = 'dialog-overlay'
+    
+    const dialog = document.createElement('div')
+    dialog.className = `dialog ${isWarning ? 'warning' : ''}`
+    
+    dialog.innerHTML = `
+      <div class="dialog-title">${title}</div>
+      <div class="dialog-content">${content}</div>
+      <div class="dialog-actions">
+        <button class="dialog-button cancel-btn">取消</button>
+        <button class="dialog-button confirm-btn">确定</button>
+      </div>
+    `
+
+    overlay.appendChild(dialog)
+    document.body.appendChild(overlay)
+    
+    // 显示动画
+    setTimeout(() => {
+      overlay.style.display = 'flex'
+      setTimeout(() => dialog.classList.add('active'), 10)
+    }, 10)
+
+    return new Promise((resolve) => {
+      dialog.querySelector('.confirm-btn').addEventListener('click', () => {
+        closeDialog(true)
+      })
+      
+      dialog.querySelector('.cancel-btn').addEventListener('click', () => {
+        closeDialog(false)
+      })
+
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeDialog(false)
+      })
+
+      const closeDialog = (result) => {
+        dialog.classList.remove('active')
+        setTimeout(() => {
+          overlay.remove()
+          resolve(result)
+        }, 300)
+      }
+    })
+  }
+
+  async function confirmOpenFile() {
+    const firstConfirm = await createDialog(
+      '操作确认',
+      '当前目录文件数量超过60，你确定要全部打开吗?'
+    )
+    
+    if (!firstConfirm) return false
+    
+    const secondConfirm = await createDialog(
+      '风险警告',
+      '建议手动打开,如果强行全部开启,渲染可能会导致窗口卡顿崩溃，你还要继续吗？',
+      true
+    )
+    
+    return secondConfirm
+  }
+
+
+
+  function countFilesAndFolders(data) {
+  let fileCount = 0; // 文件总数
+  let folderCount = 0; // 目录总数
+
+  function count(data) {
+    if (Array.isArray(data)) {
+      // 遍历数组中的每个元素
+      data.forEach(item => {
+        if (typeof item === 'string') {
+          // 如果是字符串，说明是文件
+          fileCount++;
+        } else if (typeof item === 'object' && item !== null) {
+          // 如果是对象，说明是目录
+          folderCount++;
+          // 递归遍历目录中的 items
+          if (item.items && Array.isArray(item.items)) {
+            count(item.items);
+          }
+        }
+      });
+    }
+  }
+
+  count(data); // 开始统计
+  const fileDir = fileCount+folderCount;
+  return { fileCount, fileDir }; // 返回文件和目录的数量
+}
+
+function showTempAlert(message) {
+  // 1. 创建弹窗元素
+  const alertBox = document.createElement('div');
+  
+  // 2. 设置基础样式（可自定义）
+  Object.assign(alertBox.style, {
+    position: 'fixed',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    padding: '20px 30px',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    color: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    zIndex: '1000',
+    fontSize: '16px',
+    transition: 'opacity 0.3s ease',
+    opacity: '0' // 初始透明用于渐显动画
+  });
+
+  // 3. 添加文本内容
+  alertBox.textContent = message;
+
+  // 4. 插入到页面
+  document.body.appendChild(alertBox);
+
+  // 5. 触发渐显动画
+  setTimeout(() => {
+    alertBox.style.opacity = '1';
+  }, 10);
+
+  // 6. 2秒后自动消失
+  setTimeout(() => {
+    alertBox.style.opacity = '0';
+    // 动画完成后移除元素
+    setTimeout(() => {
+      document.body.removeChild(alertBox);
+    }, 300);
+  }, 2000);
+}
+
+function convertSeconds(totalSeconds) {
+    console.log(totalSeconds)
+  const minutes = Math.floor(totalSeconds / 60);  // 计算完整分钟数
+  const seconds = totalSeconds % 60;              // 计算剩余秒数
+  return `${parseInt(minutes)}分${parseInt(seconds)}秒`;
+}
+
+function handleDownload(fullPath,size){
+  // 获取按钮元素
+  let button = event.target.closest('.download-btn');
+  
+  // 获取父容器
+  let section = event.currentTarget.closest('.download-section');
+  let metadata = button.closest('.file-directory');
+  let settimesstart = metadata.querySelector('.settime');
+  settimesstart.textContent = "";
+  let js = 0
+  let timestart
+  timestart = setInterval(() => {
+    js++;
+    settimesstart.textContent = `已等待${js} S/${parseInt(size/24)} S`
+  }, 1000);
+                    //   .querySelector('.download-section');
+    // console.log(metadata)
+    let originalHTML = button.innerHTML
+    button.innerHTML = `
+                <svg class="spinner" width="20" height="20" viewBox="0 0 50 50">
+                    <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="5"/>
+                </svg>
+                打包中...
+            `
+    button.disabled = true
+    metadata.classList.add('loading')
+    const formattedTime = convertSeconds(size / 24);
+    showTempAlert(`正在拉取文件中,大约需要${formattedTime}请稍后...`)
+    // window.location.href = `/downloadzip/${fullPath}`;
+    var xhr = new XMLHttpRequest();
+xhr.open('GET', `/downloadzip/${fullPath}`, true);
+
+// 设置 responseType 为 'blob'，以便处理文件
+xhr.responseType = 'blob';
+
+xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) { // 请求完成
+        clearInterval(timestart); // 清除计时器
+        button.innerHTML = originalHTML; // 恢复按钮内容
+        button.disabled = false; // 启用按钮
+        metadata.classList.remove('loading'); // 移除加载状态
+
+        if (xhr.status >= 200 && xhr.status < 300) { // 请求成功
+            var contentType = xhr.getResponseHeader('Content-Type');
+
+            if (contentType && contentType.includes('application/json')) {
+                // 如果返回的是 JSON，使用 FileReader 读取 Blob 数据
+                var blob = xhr.response;
+                var reader = new FileReader();
+
+                reader.onload = function () {
+                    try {
+                        var response = JSON.parse(reader.result); // 解析 JSON
+                        console.log('服务器返回 JSON:', response);
+                        button.style.background = 'red'; // 设置按钮背景为红色
+                        showTempAlert(response.code || '未知错误'); // 显示错误提示
+                    } catch (e) {
+                        console.error('解析 JSON 失败:', e);
+                        button.style.background = 'red'; // 设置按钮背景为红色
+                        showTempAlert('解析响应失败！');
+                    }
+                };
+
+                reader.onerror = function () {
+                    console.error('读取 Blob 失败');
+                    button.style.background = 'red'; // 设置按钮背景为红色
+                    showTempAlert('读取响应失败！');
+                };
+
+                reader.readAsText(blob); // 将 Blob 转换为文本
+            } else if (contentType && contentType.includes('application/zip')) {
+                // 如果返回的是文件
+                console.log('文件获取成功');
+                button.style.background = 'rgb(38, 171, 94)'; // 设置按钮背景为绿色
+                showTempAlert('文件拉取成功！'); // 显示成功提示
+
+                var blob = xhr.response; // 获取 Blob 对象
+                var contentDisposition = xhr.getResponseHeader('Content-Disposition');
+                var filename = 'download.zip'; // 默认文件名
+
+                // 从 Content-Disposition 中提取文件名
+                if (contentDisposition) {
+                    // 尝试从 filename* 提取 UTF-8 编码的文件名
+                    var filenameStarRegex = /filename\*=(?:UTF-8'')?([^;]+)/i;
+                    var filenameStarMatch = filenameStarRegex.exec(contentDisposition);
+
+                    if (filenameStarMatch && filenameStarMatch[1]) {
+                        // 解码 filename* 的值
+                        filename = decodeURIComponent(filenameStarMatch[1]);
+                    } else {
+                        // 如果 filename* 不存在，尝试从 filename 提取文件名
+                        var filenameRegex = /filename=(?:["']?)([^;"']+)(?:["']?)/i;
+                        var filenameMatch = filenameRegex.exec(contentDisposition);
+                        if (filenameMatch && filenameMatch[1]) {
+                            filename = filenameMatch[1];
+                        }
+                    }
+                }
+
+                // 创建下载链接
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename; // 使用服务器返回的文件名
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url); // 释放 URL 对象
+            } else {
+                // 未知的响应类型
+                console.log('未知的响应类型:', contentType);
+                button.style.background = 'red'; // 设置按钮背景为红色
+                showTempAlert('未知错误，请重试！');
+            }
+        } else {
+            // 文件获取失败
+            console.log('文件获取失败');
+            button.style.background = 'red'; // 设置按钮背景为红色
+            showTempAlert('文件拉取失败！'); // 显示失败提示
+        }
+    }
+};
+
+xhr.send();
+    
+}
+
+function closeAllDetails(element,isopenclose) {
+    const detailsElements = element.querySelectorAll('details');
+    detailsElements.forEach(details => {
+        details.open = false; // 关闭当前目录
+        closeAllDetails(details); // 递归关闭子目录
+    });
+    const cent = element.querySelectorAll('.file-directory')
+    // cent.forEach(cents => {
+    //     cents.style.display = 'none';
+    //     cent.opacity = '0';
+    // })
+    // console.log(typeof isopenclose)
+    
+}
+function openAllDetails(element) {
+    const detailsElements = element.querySelectorAll('details');
+    detailsElements.forEach(details => {
+        details.open = true; // 打开当前目录
+        openAllDetails(details); // 递归打开子目录
+    });
+}
+
+function openDetails(element,isopen) {
+    if (isopen){
+        element.style.display = 'inline-block'
+        element.style.marginLeft = '0px';
+        element.style.opacity = '1';
+        
+    }else{
+        element.style.marginLeft = '-520px';
+        element.style.opacity = '0';
+        setTimeout(()=>{element.style.display = 'none'}, 200);
+    }
+}
+
+// 渲染文件列表（支持多层嵌套）
+function renderFileList(items, container, currentPath = "") {
+    items.forEach(item => {
+        if (typeof item === 'string') { // 如果是文件
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+
+            const fileName = document.createElement('span');
+
+            fileName.className = 'file-name';
+            fileName.textContent = `${getFileTypeIcon(item)}${item}`;
+            fileName.title = item;
+
+            const downloadButton = document.createElement('button');
+            downloadButton.className = 'download-button';
+            downloadButton.textContent = '下载';
+
+            // 拼接完整路径
+            const fullPath = currentPath ? `${currentPath}/${item}` : item;
+
+            downloadButton.addEventListener('click', () => {
+                downloadFile(fullPath); // 传递完整路径
+            });
+
+            fileItem.appendChild(fileName);
+            fileItem.appendChild(downloadButton);
+            if (container != document.getElementById('fileList')){
+                fileItem.style.background = '#b3b1b1';
+                container.appendChild(fileItem);
+            }else{
+                fileItem.style.marginLeft = '0';
+                container.appendChild(fileItem);
+            }
+        } else if (typeof item === 'object') {
+            let {fileCount, folderCount} = countFilesAndFolders(item.items);
+             // 如果是文件夹
+            let isopen = true;
+            const details = document.createElement('details');
+            details.className = 'content';
+            const summary = document.createElement('summary');
+            summary.innerHTML = `<a style="text-overflow:ellipsis,white-space:nowrap,overflow:hidden;width:0%">📁  ${item.folder} (${fileCount})</a>`;
+            
+            const closeButton = document.createElement('button');
+            closeButton.className = 'close-button';
+            closeButton.textContent = '关闭目录';
+            closeButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // 阻止事件冒泡
+                details.open = false; // 关闭当前目录
+                closeAllDetails(details,()=>{isopen = false;}); // 递归关闭子目录
+            });
+
+            const closeButton2 = document.createElement('button');
+            closeButton2.className = 'close-button';
+            closeButton2.textContent = '全部展开';
+            closeButton2.style.display = 'inline-block';
+            closeButton2.style.position = 'static';
+            closeButton2.addEventListener('click', (event) => {
+                function startopen(){
+                    event.stopPropagation(); // 阻止事件冒泡
+                    details.open = true; // 打开当前目录
+                    openAllDetails(details); // 递归关闭子目录
+                }
+                if (fileCount > 60){
+                    confirmOpenFile().then(result => {
+                        if (result) {
+                            startopen();
+                        }
+                    });
+                }else {
+                    startopen();
+                }
+                
+            });
+
+            
+            
+            const closeButton3 = document.createElement('button');
+            closeButton3.className = 'close-button';
+            closeButton3.textContent = '详细信息';
+            closeButton3.style.display = 'inline-block';
+            closeButton3.style.display = 'none';
+            closeButton3.addEventListener('click', (event) => {
+                openDetails(dirhome,isopen)
+                isopen = !isopen;
+                closeButton3.innerText = isopen ? '详细信息' : '收起详细信息';
+            });
+            const fullPath = currentPath ? `${currentPath}/${item.folder}` : item.folder;
+            // console.log(fullPath)
+            let positionhome = document.createElement('div');
+            positionhome.style.position = 'absolute';
+            let dirseek = document.createElement('div');
+            dirseek.style.position = 'relative';
+            let dirhome = document.createElement('div');
+            dirhome.className = 'file-directory';
+            dirhome.innerHTML = `<div class="directory-header">
+                    <svg class="folder-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                    </svg>
+                    <div class="directory-name">${item.folder}</div>
+                    <div class="directory-path">${fullPath}</div>
+                </div>
+                
+                <div class="metadata">
+                    <div class="meta-item">
+                        <div class="meta-label">文件数量</div>
+                        <div class="meta-value" id="file-count">${fileCount}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">总大小</div>
+                        <div class="meta-value" id="total-size">${item.size} MB</div>
+                    </div>
+                </div>
+
+                <div class="download-section">
+                    <button class="download-btn" onclick="handleDownload('${fullPath}',${item.size})">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        打包下载
+                    </button>
+                    <div class="settime"></div>
+            </div>`
+
+            
+
+            dirseek.appendChild(dirhome);
+            positionhome.appendChild(dirseek);
+            details.appendChild(positionhome);
+            let dirhome2 = document.createElement('div');
+            dirhome2.appendChild(closeButton3);
+            dirhome2.appendChild(closeButton);
+            dirhome2.appendChild(closeButton2);
+            summary.appendChild(dirhome2);
+            details.appendChild(summary);
+
+            // 更新当前路径
+            const newPath = currentPath ? `${currentPath}/${item.folder}` : item.folder;
+
+            // 监听展开/折叠事件
+            details.addEventListener('toggle', (event) => {
+                if (details.open) {
+                    // console.log(`展开文件夹: ${item.folder}`);
+                    details.style.maxHeight = details.scrollHeight + 'px';
+                    summary.style.background = 'linear-gradient(to right,#f5aeae,#ffffff)';
+                    closeButton.style.display = 'inline-block';
+                    closeButton2.style.display = 'none';
+                    closeButton3.style.display = 'inline-block';
+                } else {
+                    // console.log(`折叠文件夹: ${item.folder}`);
+                    details.style.maxHeight = null;
+                    summary.style.background = 'linear-gradient(to right,#a1c1cd,#ffffff)';
+                    closeButton.style.display = 'none';
+                    closeButton2.style.display = 'inline-block';
+                    closeButton3.style.display = 'none';
+                    }
+            });
+            const observer = new MutationObserver(() => {
+                if (details.open) {
+                    details.style.maxHeight = details.scrollHeight + 'px';
+                }
+            });
+
+            observer.observe(details, {
+                childList: true, // 监听子节点变化
+                subtree: true,   // 监听所有后代节点
+            });
+            // details.addEventListener('mouseenter',{
+
+            // })
+            // details.addEventListener('mouseenter', (event) => {
+            //     dirhome.style.marginLeft = '-320px';
+            //     dirhome.style.marginTop = '-70px'
+            // })
+            // details.addEventListener('mouseleave', (event) => {
+            //     dirhome.style.marginLeft = '-520px';
+            //     dirhome.style.marginTop = '0px'
+            // })
+
+            // 递归渲染子项，传递新的路径
+            renderFileList(item.items, details, newPath);
+            container.appendChild(details);
+        }
+    });
+}
+
+// 模拟文件下载
+function downloadFile(filename) {
+    window.location.href = `/get_files/${filename}`;
+}
+
+
+        handleFiles();
+        function handleFiles() {
+            fetch('/files', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                // console.log('Upload success:', data);
+                const filedata = data.code;
+                const fileListContainer = document.getElementById('fileList');
+                renderFileList(filedata.files,fileListContainer);
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+            });
+        }
+        // 模拟服务器返回的 JSON 数据
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 80px;
+    height: 40px;
+    cursor: pointer;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(145deg, #e6e6e6, #ffffff);
+    transition: .4s;
+    border-radius: 34px;
+    box-shadow: 3px 3px 8px #d1d1d1,
+                -3px -3px 8px #ffffff;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 32px;
+    width: 32px;
+    left: 4px;
+    bottom: 4px;
+    background: linear-gradient(145deg, #ffffff, #e6e6e6);
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 2px 2px 4px #d1d1d1,
+                -2px -2px 4px #ffffff;
+}
+
+input:checked + .slider {
+    background: linear-gradient(145deg, #6ee7b7, #34d399);
+    box-shadow: inset 3px 3px 5px #2fa37c,
+                inset -3px -3px 5px #3cffb6;
+}
+
+input:checked + .slider:before {
+    transform: translateX(40px);
+    box-shadow: 1px 1px 2px #2fa37c,
+                -1px -1px 2px #3cffb6;
+}
+
+/* 添加文字标签 */
+.slider::after {
+    content: "OFF";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-family: Arial;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+input:checked + .slider::after {
+    content: "ON";
+    left: 12px;
+    right: auto;
+    color: #fff;
+}
+
+/* 添加悬停效果 */
+.slider:hover:before {
+    transform: scale(1.1);
+    transition: .2s;
+}
+
+input:checked + .slider:hover:before {
+    transform: translateX(40px) scale(1.1);
+}
+
+/* 点击动画 */
+input:active + .slider:before {
+    transform: scale(0.9);
+}
+
+input:checked:active + .slider:before {
+    transform: translateX(40px) scale(0.9);
+}
+</style>
+</head>
+<body>
+
+<label class="switch">
+    <input type="checkbox">
+    <span class="slider"></span>
+</label>
+
+</body>
+</html>
+

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全认证中心</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --secondary: #A8A4FF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary), #48dbfb);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deco {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            filter: blur(80px);
+        }
+
+        .deco:nth-child(1) {
+            top: -50px;
+            left: -50px;
+        }
+
+        .deco:nth-child(2) {
+            bottom: -50px;
+            right: -50px;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            width: 400px;
+            transform-style: preserve-3d;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            position: relative;
+            font-size: 2.2em;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--primary);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            /* position: relative; */
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.2);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .confirm-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .confirm-btn:hover {
+            background: #5b4bc4;
+        }
+
+        .set-new-btn {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .set-new-btn:hover {
+            background: #9290e5;
+        }
+
+        .new-password {
+            margin-top: 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .show {
+            max-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="deco"></div>
+    <div class="deco"></div>
+    
+    <div class="login-card">
+        <h1>系统安全认证</h1>
+        <h2 style="color: red;">{{error}}</h2>
+        <form id="loginForm" method="post" action="/log">
+            <div class="input-group">
+                <input type="text" placeholder="管理员账户" required name="username">
+            </div>
+            <div class="input-group">
+                <input type="password" placeholder="登录密码" required name="password">
+            </div>
+            <div class="new-password">
+                <input type="password" placeholder="新密码" name="new_password">
+                <p>忘记秘密将无法找回</p>
+            </div>
+            <div class="button-group">
+                <button type="submit" class="confirm-btn">确认登录</button>
+                <button type="button" class="set-new-btn" onclick="toggleNewPassword()">设置新密码</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function toggleNewPassword() {
+            const newPassword = document.querySelector('.new-password');
+            const btn = document.querySelector('.set-new-btn');
+            
+            newPassword.classList.toggle('show');
+            btn.textContent = newPassword.classList.contains('show') ? '取消设置' : '设置新密码';
+        }
+    </script>
+</body>
+</html>

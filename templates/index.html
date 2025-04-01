@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件操作界面</title>
+    <link rel="icon" href="{{ url_for('static', filename='icon.ico') }}" type="image/x-icon">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
+}
+
+header {
+    margin-bottom: 20px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.buttons {
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button#downloadBtn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+button#downloadBtn:hover {
+    background-color: #45a049;
+}
+
+button#uploadBtn {
+    background-color: #2196F3;
+    color: white;
+}
+
+button#uploadBtn:hover {
+    background-color: #1e88e5;
+}
+
+.announcement, .usage {
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 20px;
+    color: #333;
+}
+
+p, ol {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+}
+
+ol {
+    padding-left: 20px;
+}
+a{
+    color: red;
+    transition: all 0.3s ease-in-out;
+}
+a:hover{
+    color: #4c89af;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>文件操作平台</h1>
+        </header>
+        <main>
+            <section class="buttons">
+                <button id="downloadBtn">前往下载文件</button>
+                <button id="uploadBtn">前往上传文件</button>
+            </section>
+            <section class="announcement">
+                <h2>公告</h2>
+                <p>欢迎使用局域网文件传递服务器</p>
+                <p>若设置公共服务器,请将共享目录指向下载目录</p>
+                <p>管理界面登录请登录127.0.0.1:5000/log</p>
+                <p>初始管理员账号：<a onclick="copyToClipboard('admin')">admin</a> 密码：<a onclick="copyToClipboard('123')">123</a></p>
+                <p onclick="window.location.href='/log'" style="color: red;">点击前往管理界面</p>
+            </section>
+            <section class="usage">
+                <h2>使用方法</h2>
+                <ol>
+                    <li>局域网下复制以下IP即可访问</li>
+                    <li>点击复制公网IP
+                        {% for Public in network[0] %}
+                        <a onclick="copyToClipboard('{{ Public }}:5000')">{{ Public }}</a> , 
+                        {% endfor %}
+                    </li>
+                    <li>
+                        点击复制私网IP
+                        {% for Private in network[1] %}
+                        <a onclick="copyToClipboard('{{ Private }}:5000')">{{ Private }}</a> , 
+                        {% endfor %}
+                    </li>
+                    <li>点击“前往下载文件”按钮，下载所需文件。</li>
+                    <li>点击“前往上传文件”按钮，选择您要上传的文件。</li>
+                    <li>按照页面提示完成所需操作。</li>
+                </ol>
+            </section>
+        </main>
+    </div>
+    <script>
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            window.location.href = 'files'; // 替换为实际的下载文件路径
+        });
+
+        document.getElementById('uploadBtn').addEventListener('click', function() {
+            window.location.href = 'upload'; // 替换为实际的上传页面路径
+        });
+
+        function showTempAlert(message) {
+            // 1. 创建弹窗元素
+            const alertBox = document.createElement('div');
+            
+            // 2. 设置基础样式（可自定义）
+            Object.assign(alertBox.style, {
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                padding: '20px 30px',
+                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                color: 'white',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                zIndex: '1000',
+                fontSize: '16px',
+                transition: 'opacity 0.3s ease',
+                opacity: '0' // 初始透明用于渐显动画
+            });
+
+            // 3. 添加文本内容
+            alertBox.textContent = message;
+
+            // 4. 插入到页面
+            document.body.appendChild(alertBox);
+
+            // 5. 触发渐显动画
+            setTimeout(() => {
+                alertBox.style.opacity = '1';
+            }, 10);
+
+            // 6. 2秒后自动消失
+            setTimeout(() => {
+                alertBox.style.opacity = '0';
+                // 动画完成后移除元素
+                setTimeout(() => {
+                document.body.removeChild(alertBox);
+                }, 300);
+            }, 2000);
+            }
+        async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            showTempAlert('复制成功:'+ text);
+        } catch (err) {
+            showTempAlert('复制失败:'+ err);
+        }
+    }
+    </script>
+</body>
+</html>
