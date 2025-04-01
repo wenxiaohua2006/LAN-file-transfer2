@@ -26,7 +26,7 @@ import asyncio
 import aiofiles
 import aiofiles.os
 from pathlib import Path
-
+import subprocess
 async def get_file_size(file_path):
     """异步获取文件大小"""
     try:
@@ -287,10 +287,17 @@ def config_read():
         print("配置文件读取失败")
         return False
 
+def windowapp():
+    try:
+        subprocess.run(['PyQt5Gui.exe'])
+    except:
+        pass
+
 class SysTrayIcon():
     def __init__(self) -> None:
         self.menu = (
-            pystray.MenuItem('访问控制台', lambda: on_clicked()),
+            pystray.MenuItem('访问控制台', lambda: windowapp()),
+            pystray.MenuItem('访问用户界面', lambda: on_clicked()),
             pystray.MenuItem('终止服务器', lambda: self.sys_stop())
         )
         self.icon = pystray.Icon("test_icon", create_image(), "文件互传", self.menu)
